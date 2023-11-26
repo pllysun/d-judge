@@ -6,18 +6,13 @@ spring:
     password:
 
 
-#mybatis
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
-  #???????package?????????
   typeAliasesPackage: com.dong.djudge.entity
   global-config:
-    #???????
     db-config:
-      #????
       id-type: ASSIGN_ID
     banner: false
-  #????
   configuration:
     map-underscore-to-camel-case: true
     cache-enabled: false
