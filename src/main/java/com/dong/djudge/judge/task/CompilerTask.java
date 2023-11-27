@@ -18,17 +18,22 @@ import java.util.HashMap;
  * @since 2023/9/7 [3:37]
  * 编译源码的具体实现，通过不同的参数来选择编译的方式
  */
-@Slf4j(topic = "doj")
+@Slf4j(topic = "CompilerTask")
 @Component
 public class CompilerTask {
 
-
+    /**
+     * 语言配置加载器
+     */
+    private final LanguageConfigLoader languageConfigLoader = SpringUtil.getBean(LanguageConfigLoader.class);
+    /**
+     * 对沙盒编译服务的封装
+     */
     private final CompilerService compilerService = SpringUtil.getBean(CompilerService.class);
 
     public String compilerTask(JudgeRequest request) throws CompileException {
         String testCasesDir;
         // 对用户源代码进行编译 获取tmpfs中的fileId
-        LanguageConfigLoader languageConfigLoader = SpringUtil.getBean(LanguageConfigLoader.class);
         LanguageConfig languageConfig = languageConfigLoader.getLanguageConfigByName(request.getLanguage());
         if (languageConfig == null) {
             log.error("Unsupported language {}", request.getLanguage());

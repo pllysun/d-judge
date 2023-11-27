@@ -30,19 +30,28 @@ public enum InputFileEnum {
     /**
      * 文件方式
      */
-    private final Integer mode;
+    private final Integer code;
     /**
      * 文件内容
      */
     private final String value;
-    InputFileEnum(int mode, String value) {
-        this.mode=mode;
+    InputFileEnum(int code, String value) {
+        this.code=code;
         this.value=value;
     }
 
-    public static InputFileEnum getTypeByMode(int mode) {
+    public static InputFileEnum getTypeByCode(int code) {
         for (InputFileEnum inputFileEnum : InputFileEnum.values()) {
-            if (inputFileEnum.getMode() == mode) {
+            if (inputFileEnum.getCode() == code) {
+                return inputFileEnum;
+            }
+        }
+        return null;
+    }
+
+    public static InputFileEnum getTypeByValue(String value) {
+        for (InputFileEnum inputFileEnum : InputFileEnum.values()) {
+            if (inputFileEnum.getValue().equalsIgnoreCase(value)) {
                 return inputFileEnum;
             }
         }

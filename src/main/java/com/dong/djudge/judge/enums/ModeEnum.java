@@ -14,7 +14,7 @@ public enum ModeEnum {
     /**
      * OI模式(写代码模式)
      */
-    OI(0, "OI"),
+    OI(0, "IO"),
     /**
      * ACM模式(普通模式)
      */
@@ -33,17 +33,18 @@ public enum ModeEnum {
     SAP(4, "SAP");
 
 
-    private final Integer mode;
+    private final Integer code;
     private final String name;
 
-    ModeEnum(Integer mode, String name) {
-        this.mode = mode;
+    ModeEnum(Integer code, String name) {
+        this.code = code;
         this.name = name;
     }
 
-    public static ModeEnum getTypeByMode(int mode) {
+
+    public static ModeEnum getTypeByName(String name) {
         for (ModeEnum modeEnum : ModeEnum.values()) {
-            if (modeEnum.getMode() == mode) {
+            if (modeEnum.getName().equalsIgnoreCase(name)) {
                 return modeEnum;
             }
         }

@@ -4,6 +4,9 @@ spring:
     url: jdbc:sqlite::resource:db/judge.db
     username:
     password:
+# slf4j日志配置
+logging:
+  config: classpath:logback.xml
 
 
 mybatis-plus:
