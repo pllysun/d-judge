@@ -4,6 +4,7 @@ import cn.hutool.json.JSONArray;
 import com.dong.djudge.common.exception.CompileException;
 import com.dong.djudge.common.exception.SystemException;
 import com.dong.djudge.dto.JudgeRequest;
+import com.dong.djudge.judge.enums.ModeEnum;
 import com.dong.djudge.service.JudgeService;
 import com.dong.djudge.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ public class JudgeController {
     @Autowired
     private JudgeService judgeService;
 
+
     /**
      * 判题服务类
      *
@@ -33,7 +35,7 @@ public class JudgeController {
     @PostMapping(value = "/judge")
     public Result<Object> submitProblemTestJudge(@RequestBody JudgeRequest request) {
 
-        if (request == null || request.getTestType() == null
+        if (request == null || request.getModeType() == null
                 || ObjectUtils.isEmpty(request.getCode())
                 || ObjectUtils.isEmpty(request.getLanguage())
                 || request.getInputFileType() == null
@@ -43,9 +45,10 @@ public class JudgeController {
         // result为判题结果
         JSONArray result = null;
         try {
-            switch (request.getTestType()) {
+                Integer code = Objects.requireNonNull(ModeEnum.getTypeByName(request.getModeType())).getCode();
+            switch (code) {
                 case 0:
-                    result = judgeService.oiJudge(request);
+                    result = judgeService.Judge(request);
                     break;
                 case 1:
                     break;
@@ -56,7 +59,6 @@ public class JudgeController {
                 case 4:
                     break;
                 case 5:
-                    judgeService.sapJudge(request);
                     break;
                 default:
                     return Result.errorResponse("调用参数错误！请检查您的调用参数！");
@@ -71,10 +73,6 @@ public class JudgeController {
         return new Result<>().ok(result);
     }
 
-    @GetMapping(value = "/test")
-    public Result<Objects> test(@RequestBody JudgeRequest request) throws SystemException, CompileException {
-        String comppile = judgeService.comppile(request.getCode(), request.getLanguage());
-        return Result.successResponse(comppile);
-    }
+
 
 }

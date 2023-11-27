@@ -15,12 +15,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * @Author Himit_ZH
- * @Date 2022/11/22
- */
 
-@Slf4j(topic = "hoj")
+/**
+ * 语言配置加载器
+ */
+@Slf4j(topic = "LanguageConfigLoader")
 @Component
 public class LanguageConfigLoader {
 

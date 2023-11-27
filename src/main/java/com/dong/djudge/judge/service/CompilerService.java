@@ -10,6 +10,7 @@ import java.util.HashMap;
 /**
  * @author 阿东
  * @since 2023/9/10 [15:22]
+ * 注意区分Judge包下的CompilerService和总目录下的CompileService，前者是对沙盒的编译封装，后者是调用前者的编译服务
  */
 public interface CompilerService {
     /**
