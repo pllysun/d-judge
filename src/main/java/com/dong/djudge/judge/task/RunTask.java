@@ -22,7 +22,6 @@ public class RunTask {
         LanguageConfigLoader languageConfigLoader = new LanguageConfigLoader();
         //获取语言配置
         LanguageConfig languageConfigByName = languageConfigLoader.getLanguageConfigByName(request.getLanguage());
-        JSONArray objects = runService.testCase(languageConfigByName,request,fileId,fileContent);
-        return objects;
+        return runService.testCase(languageConfigByName,request,fileId,fileContent);
     }
 }

@@ -1,4 +1,4 @@
-package com.dong.djudge.judge.enums;
+package com.dong.djudge.enums;
 
 import lombok.Getter;
 

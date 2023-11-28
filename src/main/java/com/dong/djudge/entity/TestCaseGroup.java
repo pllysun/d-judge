@@ -9,15 +9,11 @@ import java.util.List;
  * @since 2023/9/7 [19:34]
  */
 @Data
-public class TestCase {
+public class TestCaseGroup{
     /**
      * 测试用例组ID
      */
     private Integer id;
-    /**
-     * 测试用例组名称
-     */
-    private String group;
     /**
      * 测试输入组内容
      */

@@ -2,18 +2,14 @@ package com.dong.djudge.service.impl;
 
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONArray;
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dong.djudge.common.exception.CompileException;
 import com.dong.djudge.common.exception.SystemException;
 import com.dong.djudge.dto.JudgeRequest;
-import com.dong.djudge.entity.InputFile;
-import com.dong.djudge.entity.Test;
-import com.dong.djudge.entity.TestCase;
+import com.dong.djudge.entity.FileEntity;
 import com.dong.djudge.judge.task.CompilerTask;
 import com.dong.djudge.judge.task.RunTask;
-import com.dong.djudge.mapper.TestMapper;
+import com.dong.djudge.mapper.FileMapper;
 import com.dong.djudge.service.CompileService;
 import com.dong.djudge.service.HttpService;
 import com.dong.djudge.service.JudgeService;
@@ -26,7 +22,7 @@ import org.springframework.stereotype.Service;
  */
 @SuppressWarnings("ALL")
 @Service
-public class JudgeServiceImplForIO extends ServiceImpl<TestMapper, Test> implements JudgeService {
+public class JudgeServiceImplForIO extends ServiceImpl<FileMapper, FileEntity> implements JudgeService {
 
     @Autowired
     private HttpService httpService;
@@ -72,15 +68,6 @@ public class JudgeServiceImplForIO extends ServiceImpl<TestMapper, Test> impleme
         // 获取输入文件的内容
         String inputFileContext = request.getInputFileContext();
         // 将输入文件内容解析为 InputFile 对象
-        InputFile inputFile = JSONObject.parseObject(inputFileContext, InputFile.class);
-        // 遍历输入文件的测试用例
-        for (TestCase testCase : inputFile.getTestCases()) {
-            // 遍历测试用例的输入数据
-            for (String caseString : testCase.getInput()) {
-                // 在这里执行相应的评测逻辑，处理测试用例的输入数据
-
-            }
-        }
     }
 
 

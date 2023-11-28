@@ -1,7 +1,7 @@
 package com.dong.djudge.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.dong.djudge.entity.Test;
+import com.dong.djudge.entity.FileEntity;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -9,6 +9,6 @@ import org.apache.ibatis.annotations.Mapper;
  * @date 2023/9/6 [13:02]
  */
 @Mapper
-public interface TestMapper extends BaseMapper<Test> {
+public interface FileMapper extends BaseMapper<FileEntity> {
 
 }
