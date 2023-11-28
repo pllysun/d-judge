@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
  * 初始化SqlLite数据库
  */
 @Component
-public class SqlLiteConfig {
+public class SqliteConfig {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
