@@ -3,7 +3,7 @@ package com.dong.djudge.judge;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import com.dong.djudge.common.exception.SystemException;
+import com.dong.djudge.exception.SystemException;
 import com.dong.djudge.util.Constants;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

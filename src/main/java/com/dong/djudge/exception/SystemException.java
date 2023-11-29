@@ -1,22 +1,23 @@
-package com.dong.djudge.common.exception;
+package com.dong.djudge.exception;
 
 import lombok.Data;
 
 /**
  * @Author: Himit_ZH
- * @Date: 2021/1/31 00:16
+ * @Date: 2021/1/31 00:17
  * @Description:
  */
 @Data
-public class RuntimeException extends Exception {
+public class SystemException extends Exception {
     private String message;
     private String stdout;
     private String stderr;
 
-    public RuntimeException(String message, String stdout, String stderr) {
-        super(message);
+    public SystemException(String message, String stdout, String stderr) {
+        super(message + " " + stderr);
         this.message = message;
         this.stdout = stdout;
         this.stderr = stderr;
     }
+
 }

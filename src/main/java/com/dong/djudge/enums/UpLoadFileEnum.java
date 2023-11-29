@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 public enum UpLoadFileEnum {
     JSON(0, "Json"),
-    OSS(1, "OSS"),
+    URL(1, "URL"),
     FILE(2, "File");
     private final Integer code;
     private final String value;

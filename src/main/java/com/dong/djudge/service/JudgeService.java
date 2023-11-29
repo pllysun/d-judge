@@ -2,8 +2,8 @@ package com.dong.djudge.service;
 
 import cn.hutool.json.JSONArray;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.dong.djudge.common.exception.CompileException;
-import com.dong.djudge.common.exception.SystemException;
+import com.dong.djudge.exception.CompileException;
+import com.dong.djudge.exception.SystemException;
 import com.dong.djudge.dto.JudgeRequest;
 import com.dong.djudge.entity.FileEntity;
 

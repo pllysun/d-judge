@@ -1,15 +1,12 @@
 package com.dong.djudge.service.impl;
 
-import com.dong.djudge.common.exception.CompileException;
-import com.dong.djudge.common.exception.SystemException;
+import com.dong.djudge.exception.CompileException;
 import com.dong.djudge.dto.JudgeRequest;
 import com.dong.djudge.judge.task.CompilerTask;
 import com.dong.djudge.service.CompileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.PrimitiveIterator;
 
 /**
  * @author 樊东升

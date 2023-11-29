@@ -2,8 +2,6 @@ package com.dong.djudge.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -12,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Data
 public class TestGroupFileDTO {
-    @NotBlank(message = "错误")
+    @NotBlank(message = "参数type不能为空")
     String type;
     String content;
     MultipartFile file;

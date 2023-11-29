@@ -1,19 +1,19 @@
-package com.dong.djudge.common.exception;
+package com.dong.djudge.exception;
 
 import lombok.Data;
 
 /**
  * @Author: Himit_ZH
- * @Date: 2021/4/16 13:52
+ * @Date: 2021/1/31 00:16
  * @Description:
  */
 @Data
-public class SubmitException extends Exception {
+public class CodeRunException extends Exception {
     private String message;
     private String stdout;
     private String stderr;
 
-    public SubmitException(String message, String stdout, String stderr) {
+    public CodeRunException(String message, String stdout, String stderr) {
         super(message);
         this.message = message;
         this.stdout = stdout;

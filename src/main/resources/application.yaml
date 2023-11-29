@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: org.sqlite.JDBC
-    url: jdbc:sqlite::resource:db/judge.db
+    url: jdbc:sqlite:db/judge.db
     username:
     password:
 # slf4j日志配置

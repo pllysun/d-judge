@@ -2,9 +2,9 @@ package com.dong.djudge.judge.service.impl;
 
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
-import com.dong.djudge.common.exception.CompileException;
-import com.dong.djudge.common.exception.SubmitException;
-import com.dong.djudge.common.exception.SystemException;
+import com.dong.djudge.exception.CompileException;
+import com.dong.djudge.exception.SubmitException;
+import com.dong.djudge.exception.SystemException;
 import com.dong.djudge.judge.SandboxRun;
 import com.dong.djudge.judge.entity.LanguageConfig;
 import com.dong.djudge.judge.service.CompilerService;

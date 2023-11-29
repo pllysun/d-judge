@@ -2,7 +2,7 @@ package com.dong.djudge.judge.task;
 
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONArray;
-import com.dong.djudge.common.exception.SystemException;
+import com.dong.djudge.exception.SystemException;
 import com.dong.djudge.dto.JudgeRequest;
 import com.dong.djudge.judge.LanguageConfigLoader;
 import com.dong.djudge.judge.entity.LanguageConfig;
