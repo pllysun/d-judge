@@ -35,7 +35,7 @@ public class JudgeRequest implements Serializable {
     private String language;
 
     /**
-     * 代码测试案例的文件类型（0-Json，1-OSS，2-LocalFile）具体参照judge.enums下面的InputFileEnum枚举类
+     * 代码测试案例的文件类型（Json，URL，FILE）具体参照judge.enums下面的InputFileEnum枚举类
      */
     private String inputFileType;
 

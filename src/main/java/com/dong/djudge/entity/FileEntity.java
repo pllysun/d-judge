@@ -14,8 +14,10 @@ public class FileEntity {
     private String fileId;
     @TableField(value = "file_path")
     private String filePath;
-    @TableField(value = "create_time",fill= FieldFill.INSERT)
+    @TableField(value = "create_time")
     private Date createTime;
+    @TableField(value = "update_time")
+    private Date updateTime;
 
     public FileEntity(String fileId, String filePath) {
         this.fileId = fileId;

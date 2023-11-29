@@ -14,4 +14,5 @@ public class TestGroupFileDTO {
     String type;
     String content;
     MultipartFile file;
+    String fileId;
 }
