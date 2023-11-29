@@ -4,6 +4,8 @@ spring:
     url: jdbc:sqlite:db/judge.db
     username:
     password:
+  thymeleaf:
+    check-template-location: false
 # slf4j日志配置
 logging:
   config: classpath:logback.xml

@@ -3,20 +3,22 @@ package com.dong.djudge.controller;
 import com.dong.djudge.dto.TestGroupFileDTO;
 import com.dong.djudge.enums.ResultStatus;
 import com.dong.djudge.enums.UpLoadFileEnum;
-import com.dong.djudge.service.FileService;
+import com.dong.djudge.service.TestGroupFileService;
 import com.dong.djudge.util.JsonUtils;
 import com.dong.djudge.util.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MimeTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -28,17 +30,17 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * 上传测试集服务类
+ * 测试集上传服务类
  *
  * @author 樊东升
  * @date 2023/11/27 22:38
  */
 @Slf4j
 @RestController()
-public class FileController {
+public class TestGroupFileController {
 
     @Autowired
-    private FileService fileService;
+    private TestGroupFileService testGroupFileService;
 
     /**
      * 上传文件
@@ -54,10 +56,14 @@ public class FileController {
      * file    type为file时这个参数才有效件,仅支持扩展名为.json的文件
      * 参数类型有三种，一种是测试Json，一种是测试Json的网络URL，一种是测试文件
      */
-    @PutMapping(value = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseResult<String> uploadFile(@ModelAttribute @Validated TestGroupFileDTO testGroupFileDTO, BindingResult bindingResult) {
+    @PostMapping(value = "/uploadFile")
+    public ResponseResult<String> uploadFile(@ModelAttribute @Validated @RequestBody TestGroupFileDTO testGroupFileDTO, BindingResult bindingResult) throws IOException {
+        return uploadFile(testGroupFileDTO, bindingResult, true);
+    }
+
+    private ResponseResult<String> uploadFile(TestGroupFileDTO testGroupFileDTO, BindingResult bindingResult, boolean isUpload) throws IOException {
         log.info("type:{}, content:{}", testGroupFileDTO.getType(), testGroupFileDTO.getContent());
-        if (bindingResult.hasErrors()){
+        if (bindingResult.hasErrors()) {
             List<FieldError> fieldErrors = bindingResult.getFieldErrors();
             return ResponseResult.failResponse(fieldErrors.get(0).getDefaultMessage());
         }
@@ -80,7 +86,12 @@ public class FileController {
                 if (JsonUtils.isValidJson(testGroupFileDTO.getContent())) {
                     return ResponseResult.failResponse("无效的 JSON 内容！");
                 }
-                fileId=fileService.uploadFile(testGroupFileDTO.getContent());
+                if (isUpload) {
+                    fileId = testGroupFileService.uploadFile(testGroupFileDTO.getContent());
+                } else {
+                    testGroupFileService.updateFile(testGroupFileDTO.getFileId(), testGroupFileDTO.getContent());
+                    return ResponseResult.successResponse("更新成功");
+                }
                 break;
             case 1:
                 // 检查URL是否有效
@@ -100,7 +111,12 @@ public class FileController {
                     return ResponseResult.failResponse("无效的JSON 内容！");
                 }
                 // 处理JSON内容或调用fileService.uploadFile方法
-                fileId=fileService.uploadFile(jsonContent);
+                if (isUpload) {
+                    fileId = testGroupFileService.uploadFile(jsonContent);
+                } else {
+                    testGroupFileService.updateFile(testGroupFileDTO.getFileId(), jsonContent);
+                    return ResponseResult.successResponse("更新成功");
+                }
                 break;
             case 2:
                 // 处理类型为2的情况
@@ -120,7 +136,12 @@ public class FileController {
                     if (JsonUtils.isValidJson(json)) {
                         return ResponseResult.failResponse("无效的 JSON 内容！");
                     }
-                    fileId=fileService.uploadFile(json);
+                    if (isUpload) {
+                        fileId = testGroupFileService.uploadFile(json);
+                    } else {
+                        testGroupFileService.updateFile(testGroupFileDTO.getFileId(), json);
+                        return ResponseResult.successResponse("更新成功");
+                    }
                 } catch (IOException e) {
                     log.error("文件类型检测失败！", e);
                     return ResponseResult.failResponse("文件类型检测失败！");
@@ -152,5 +173,56 @@ public class FileController {
             log.error("从URL检索JSON内容失败：{}", url, e);
             throw new Exception("从URL检索JSON内容失败", e);
         }
+    }
+
+    /**
+     * 下载文件
+     *
+     * @param fileId 文件id
+     * @return json文件
+     */
+    @GetMapping(value = "/downLoadFile")
+    public ResponseResult<String> getFile(String fileId) {
+        if (fileId == null || fileId.isBlank()) {
+            return ResponseResult.failResponse("fileId参数不能为空");
+        }
+        String Json = testGroupFileService.getFile(fileId);
+        return new ResponseResult<>(200, "获取成功", Json);
+    }
+
+    /**
+     * 修改文件
+     *
+     * @param testGroupFileIdDTO 修改文件的相关内容
+     * @param bindingResult      参数校验
+     * @return 响应信息
+     */
+    @PutMapping(value = "/updateFile" ,consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseResult<String> updateFile(@ModelAttribute @Validated TestGroupFileDTO testGroupFileIdDTO, BindingResult bindingResult) throws IOException {
+        if (testGroupFileIdDTO.getFileId() == null) {
+            return ResponseResult.failResponse("fileId不能为空");
+        }
+        return uploadFile(testGroupFileIdDTO, bindingResult, false);
+    }
+
+
+    /**
+     * 删除文件
+     *
+     * @param fileId 文件ID
+     * @return 响应信息
+     */
+    @DeleteMapping(value = "/DeleteFile")
+    public ResponseResult<String> deleteFile(String fileId) {
+        if (fileId == null || fileId.isBlank()) {
+            return ResponseResult.failResponse("fileId参数不能为空");
+        }
+        try {
+            testGroupFileService.deleteFile(fileId);
+        } catch (IOException e) {
+            log.warn("删除测试集出问题:{}",e.getMessage());
+            return ResponseResult.failResponse("删除文件出错，文件可能不存在或fileId出错");
+        }
+        return ResponseResult.successResponse("删除成功");
     }
 }
