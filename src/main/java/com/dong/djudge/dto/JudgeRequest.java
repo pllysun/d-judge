@@ -1,5 +1,7 @@
 package com.dong.djudge.dto;
 
+import com.dong.djudge.entity.judge.CodeSetting;
+import com.dong.djudge.entity.judge.StandardCode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,50 +22,31 @@ public class JudgeRequest implements Serializable {
     @Serial
     private static final long serialVersionUID = 666L;
     /**
-     * 评测的类型(0-IO,1-OJ,2-ACM,3-CODE,4-SAP)
+     * 评测的类型(0-OI,1-OJ,2-ACM,3-CODE)
      */
     private String modeType;
-
     /**
      * 评测的代码
      */
     private String code;
-
     /**
      * 评测的语言
      */
     private String language;
+    /**
+     * 当且仅当评测类型为OI时，这个字段为必填。其余都不需要填写
+     */
+    private String oiString;
 
     /**
-     * 代码测试案例的文件类型（Json，URL，FILE）具体参照judge.enums下面的InputFileEnum枚举类
+     * 标准代码
      */
-    private String inputFileType;
+   private StandardCode standardCode;
 
     /**
-     * 代码测试案例的文件内容（根据inputFileType的类型来决定这个，0是json文本，1是网址，2是文件地址）
+     * 代码相关设置
      */
-    private String inputFileContext;
-
-    /**
-     * 代码测试案例的文件地址（根据inputFileType的类型来决定这个，0是json文本，1是网址，2是文件地址）
-     */
-
-    /**
-     * 最大运行时间
-     */
-    Long maxTime ;
-    /**
-     * 最大运行内存
-     */
-    Long maxMemory ;
-    /**
-     * 最大栈大小
-     */
-    Long maxStack ;
-    /**
-     * 最大输出大小
-     */
-    Integer maxOutput ;
+    CodeSetting codeSetting;
 
     public JudgeRequest(String code, String language) {
         this.code = code;
