@@ -3,6 +3,9 @@ package com.dong.djudge.service.impl;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONArray;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.dong.djudge.entity.TestCaseGroup;
+import com.dong.djudge.entity.judge.RunResult;
+import com.dong.djudge.enums.InputFileEnum;
 import com.dong.djudge.exception.CompileException;
 import com.dong.djudge.exception.SystemException;
 import com.dong.djudge.dto.JudgeRequest;
@@ -13,8 +16,12 @@ import com.dong.djudge.mapper.FileMapper;
 import com.dong.djudge.service.CompileService;
 import com.dong.djudge.service.HttpService;
 import com.dong.djudge.service.JudgeService;
+import com.dong.djudge.util.JsonUtils;
+import com.dong.djudge.util.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @author 阿东
@@ -40,35 +47,12 @@ public class JudgeServiceImplForIO extends ServiceImpl<FileMapper, FileEntity> i
      * @return 返回判题结果Json
      */
     @Override
-    public JSONArray Judge(JudgeRequest request) throws SystemException, CompileException {
+    public ResponseResult<Object> Judge(JudgeRequest request) throws SystemException, CompileException {
         // 编译代码 并且得到沙盒里代码编译的文件id
         String fileId= compileService.compile(request);
         String inputFileContext = request.getInputFileContext();
-        JSONArray json = null;
-        try {
-            json = runTask.runTask(request, fileId, inputFileContext);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return json;
-
+        List<RunResult> runResults = runTask.runTask(request, fileId, inputFileContext);
+        return ResponseResult.successResponse(runResults.get(0));
     }
-
-    /**
-     * 根据 JSON 数据进行评测。
-     *
-     * @param request 评测请求对象，包含评测所需的信息。
-     * @throws CompileException 如果编译过程中发生异常，则抛出 CompileException。
-     */
-    public void judgeByJson(JudgeRequest request) throws CompileException {
-        // 创建编译器任务
-        CompilerTask compilerTask = new CompilerTask();
-        // 调用编译器任务进行编译，获取文件ID
-        String fileId = compilerTask.compilerTask(request);
-        // 获取输入文件的内容
-        String inputFileContext = request.getInputFileContext();
-        // 将输入文件内容解析为 InputFile 对象
-    }
-
 
 }

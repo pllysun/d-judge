@@ -14,7 +14,7 @@ public enum ModeEnum {
     /**
      * OI模式(写代码模式)
      */
-    OI(0, "IO"),
+    OI(0, "OI"),
     /**
      * ACM模式(普通模式)
      */

@@ -6,6 +6,7 @@ import com.dong.djudge.exception.CompileException;
 import com.dong.djudge.exception.SystemException;
 import com.dong.djudge.dto.JudgeRequest;
 import com.dong.djudge.entity.FileEntity;
+import com.dong.djudge.util.ResponseResult;
 
 /**
  * @author 阿东
@@ -20,5 +21,5 @@ public interface JudgeService extends IService<FileEntity> {
      * @throws SystemException 系统错误
      * @throws CompileException 编译错误
      */
-    JSONArray Judge(JudgeRequest request) throws SystemException, CompileException;
+    ResponseResult<Object> Judge(JudgeRequest request) throws SystemException, CompileException;
 }
