@@ -8,6 +8,7 @@ import com.dong.djudge.enums.ModeEnum;
 import com.dong.djudge.service.JudgeService;
 import com.dong.djudge.util.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,7 +26,22 @@ import java.util.Objects;
 public class JudgeController {
 
     @Autowired
-    private JudgeService judgeService;
+    @Qualifier("JudgeServiceOiImpl")
+    private JudgeService oiJudgeService;
+
+    @Autowired
+    @Qualifier("JudgeServiceOjImpl")
+    private JudgeService ojJudgeService;
+
+    @Autowired
+    @Qualifier("JudgeServiceAcmImpl")
+    private JudgeService acmJudgeService;
+
+    @Autowired
+    @Qualifier("JudgeServiceCodeImpl")
+    private JudgeService codeJudgeService;
+
+
 
 
     /**
@@ -33,21 +49,23 @@ public class JudgeController {
      *
      * @param request 请求参数
      */
-    @PostMapping(value = "/ ")
+    @PostMapping(value = "/judge")
     public ResponseResult<Object> submitProblemTestJudge(@RequestBody JudgeRequest request) throws SystemException, CompileException {
 
         if (request == null || request.getModeType() == null
                 || ObjectUtils.isEmpty(request.getCode())
-                || ObjectUtils.isEmpty(request.getLanguage())
-                || request.getInputFileType() == null
-                || request.getInputFileContext() == null) {
+                || ObjectUtils.isEmpty(request.getLanguage())) {
             return ResponseResult.failResponse("调用参数错误！请检查您的调用参数！");
         }
         // result为判题结果
-        Integer code = Objects.requireNonNull(ModeEnum.getTypeByName(request.getModeType())).getCode();
+        ModeEnum typeByName = ModeEnum.getTypeByName(request.getModeType());
+        if(typeByName== null){
+            return ResponseResult.failResponse("未知modeType类型");
+        }
+        Integer code = typeByName.getCode();
         switch (code) {
             case 0:
-                return judgeService.Judge(request);
+                return oiJudge(request);
             case 1:
                 break;
             case 2:
@@ -63,5 +81,9 @@ public class JudgeController {
         }
 
         return ResponseResult.exceptionError("异常错误");
+    }
+
+    private ResponseResult<Object> oiJudge(JudgeRequest request) throws SystemException, CompileException {
+        return oiJudgeService.Judge(request);
     }
 }

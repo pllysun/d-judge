@@ -28,8 +28,8 @@ import java.util.List;
  * @since 2023/9/6 [0:23]
  */
 @SuppressWarnings("ALL")
-@Service
-public class JudgeServiceImplForIO extends ServiceImpl<FileMapper, FileEntity> implements JudgeService {
+@Service("JudgeServiceOiImpl")
+public class JudgeServiceOiImpl extends ServiceImpl<FileMapper, FileEntity> implements JudgeService {
 
     @Autowired
     private HttpService httpService;
@@ -50,7 +50,7 @@ public class JudgeServiceImplForIO extends ServiceImpl<FileMapper, FileEntity> i
     public ResponseResult<Object> Judge(JudgeRequest request) throws SystemException, CompileException {
         // 编译代码 并且得到沙盒里代码编译的文件id
         String fileId= compileService.compile(request);
-        String inputFileContext = request.getInputFileContext();
+        String inputFileContext = request.getOiString();
         List<RunResult> runResults = runTask.runTask(request, fileId, inputFileContext);
         return ResponseResult.successResponse(runResults.get(0));
     }

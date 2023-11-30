@@ -1,8 +1,9 @@
 package com.dong.djudge.judge.service.impl;
 
 import cn.hutool.json.JSONArray;
-import com.dong.djudge.exception.SystemException;
 import com.dong.djudge.dto.JudgeRequest;
+import com.dong.djudge.entity.judge.CodeSetting;
+import com.dong.djudge.exception.SystemException;
 import com.dong.djudge.judge.SandboxRun;
 import com.dong.djudge.judge.entity.LanguageConfig;
 import com.dong.djudge.judge.service.RunService;
@@ -40,16 +41,20 @@ public class OiRunServiceImpl implements RunService {
      * 最大输出，单位byte 10K
      */
     Integer maxOutput = 134217728;
+
     @Override
     public JSONArray testCase(LanguageConfig languageConfig, JudgeRequest request, String fileId, String testCaseContent) throws SystemException {
-        List<String> args=new ArrayList<>();
+        List<String> args = new ArrayList<>();
+        if(request.getCodeSetting()==null){
+            request.setCodeSetting(new CodeSetting());
+        }
         args.add(languageConfig.getRunCommand());
         JSONArray objects = SandboxRun.testCase(args,
                 languageConfig.getRunEnvs(),
-                request.getMaxTime()==null?maxTime:request.getMaxTime(),
-                request.getMaxMemory()==null?maxMemory:request.getMaxMemory(),
-                request.getMaxStack()==null?maxStack:request.getMaxStack(),
-                request.getMaxOutput()==null?maxOutput:request.getMaxOutput(),
+                request.getCodeSetting().getMaxTime() == null ? maxTime : request.getCodeSetting().getMaxTime(),
+                request.getCodeSetting().getMaxMemory() == null ? maxMemory : request.getCodeSetting().getMaxMemory(),
+                request.getCodeSetting().getMaxStack() == null ? maxStack : request.getCodeSetting().getMaxStack(),
+                request.getCodeSetting().getMaxOutput() == null ? maxOutput : request.getCodeSetting().getMaxOutput(),
                 languageConfig.getExeName(),
                 fileId,
                 testCaseContent,
