@@ -17,4 +17,8 @@ public class JsonUtils {
         }
     }
 
+    public static List<TestCaseGroup> getTestCaseGroupList(String jsonString) {
+        return JSON.parseArray(jsonString, TestCaseGroup.class);
+    }
+
 }

@@ -33,7 +33,7 @@ public class JudgeController {
      *
      * @param request 请求参数
      */
-    @PostMapping(value = "/judge")
+    @PostMapping(value = "/ ")
     public ResponseResult<Object> submitProblemTestJudge(@RequestBody JudgeRequest request) throws SystemException, CompileException {
 
         if (request == null || request.getModeType() == null
@@ -44,12 +44,10 @@ public class JudgeController {
             return ResponseResult.failResponse("调用参数错误！请检查您的调用参数！");
         }
         // result为判题结果
-        JSONArray result = null;
         Integer code = Objects.requireNonNull(ModeEnum.getTypeByName(request.getModeType())).getCode();
         switch (code) {
             case 0:
-                result = judgeService.Judge(request);
-                break;
+                return judgeService.Judge(request);
             case 1:
                 break;
             case 2:
@@ -64,6 +62,6 @@ public class JudgeController {
                 return ResponseResult.failResponse("调用参数错误！请检查您的调用参数！");
         }
 
-        return ResponseResult.successResponse(result);
+        return ResponseResult.exceptionError("异常错误");
     }
 }

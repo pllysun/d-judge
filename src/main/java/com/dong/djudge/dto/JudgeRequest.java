@@ -45,6 +45,10 @@ public class JudgeRequest implements Serializable {
     private String inputFileContext;
 
     /**
+     * 代码测试案例的文件地址（根据inputFileType的类型来决定这个，0是json文本，1是网址，2是文件地址）
+     */
+
+    /**
      * 最大运行时间
      */
     Long maxTime ;
