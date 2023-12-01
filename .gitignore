@@ -33,3 +33,5 @@ build/
 .vscode/
 /apilogs/
 /logs/
+/db/judge.db
+

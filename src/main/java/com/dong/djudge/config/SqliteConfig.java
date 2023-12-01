@@ -26,19 +26,44 @@ public class SqliteConfig {
      */
     @PostConstruct
     public void init() {
-        String createUser = "CREATE TABLE IF NOT EXISTS file (" +
+        jdbcTemplate.update(createFile());
+        jdbcTemplate.update(dropTrigger1());
+        jdbcTemplate.update(createFileTrigger1());
+        jdbcTemplate.update(createStandardCode());
+        List<Map<String, Object>> maps = jdbcTemplate.queryForList("SELECT * FROM test_group");
+        log.info(Arrays.toString(maps.toArray()));
+    }
+
+    private String createFile() {
+        return "CREATE TABLE IF NOT EXISTS test_group (" +
                 "    id BIGINT PRIMARY KEY," +
-                "    file_id CHAR(12) UNIQUE," +
-                "    file_path VARCHAR(512)," +
+                "    test_group_id CHAR(12) UNIQUE," +
+                "    test_group_path VARCHAR(512)," +
                 "    create_time TIMESTAMP DEFAULT (strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime'))," +
                 "    update_time TIMESTAMP DEFAULT (strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime'))" +
                 ");";
-        String deleteTrigger = "DROP TRIGGER IF EXISTS update_file_trigger;";
-        String createTrigger = "CREATE TRIGGER update_file_trigger AFTER UPDATE ON file BEGIN UPDATE file SET update_time = strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime') WHERE id = NEW.id; END;";
-        jdbcTemplate.update(createUser);
-        jdbcTemplate.update(deleteTrigger);
-        jdbcTemplate.update(createTrigger);
-        List<Map<String, Object>> maps = jdbcTemplate.queryForList("SELECT * FROM file");
-        log.info(Arrays.toString(maps.toArray()));
+    }
+
+    private String dropTrigger1() {
+        return "DROP TRIGGER IF EXISTS update_file_trigger;";
+    }
+
+    private String createFileTrigger1() {
+        return "CREATE TRIGGER update_file_trigger AFTER UPDATE ON test_group BEGIN UPDATE file SET update_time = strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime') WHERE id = NEW.id; END;";
+    }
+
+
+    private String createStandardCode() {
+        return """
+                CREATE TABLE IF NOT EXISTS standard_code (
+                    id BIGINT PRIMARY KEY,
+                    code_id VARCHAR(12) NOT NULL,
+                    test_group_id VARCHAR(12) NOT NULL,
+                    code_path VARCHAR(512) NOT NULL,
+                    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE (code_id)
+                );
+                """;
     }
 }

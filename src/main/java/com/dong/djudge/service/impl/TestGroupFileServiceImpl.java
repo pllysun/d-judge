@@ -2,10 +2,10 @@ package com.dong.djudge.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.dong.djudge.entity.FileEntity;
-import com.dong.djudge.mapper.FileMapper;
+import com.dong.djudge.entity.TestGroupEntity;
+import com.dong.djudge.mapper.TestGroupMapper;
 import com.dong.djudge.service.TestGroupFileService;
-import com.dong.djudge.util.PathUrlUtils;
+import com.dong.djudge.util.TestGroupUtils;
 import com.dong.djudge.util.RandomUpperGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ import java.nio.file.StandardOpenOption;
 @Slf4j(topic = "TestGroupFileServiceImpl")
 public class TestGroupFileServiceImpl implements TestGroupFileService {
     @Autowired
-    private FileMapper fileMapper;
+    private TestGroupMapper fileMapper;
 
     @Override
     public String uploadFile(String value) {
@@ -37,7 +37,7 @@ public class TestGroupFileServiceImpl implements TestGroupFileService {
             fileID=fileId;
         }
         // 获取文件路径
-        String uri = new PathUrlUtils().getJarFilePath();
+        String uri = new TestGroupUtils().getJarFilePath();
         Path path = Paths.get(uri);
         // 创建文件路径
         Path filePath = path.resolve(fileID + ".json");
@@ -49,16 +49,16 @@ public class TestGroupFileServiceImpl implements TestGroupFileService {
             log.error("文件写入失败");
         }
         if(isUpload){
-            fileMapper.insert(new FileEntity(fileID, filePath.toString()));
+            fileMapper.insert(new TestGroupEntity(fileID, filePath.toString()));
         }
         return fileID;
     }
 
     @Override
     public void deleteFile(String fileId) throws IOException {
-        fileMapper.delete(new LambdaQueryWrapper<FileEntity>().eq(FileEntity::getFileId, fileId));
+        fileMapper.delete(new LambdaQueryWrapper<TestGroupEntity>().eq(TestGroupEntity::getTestGroupId, fileId));
         // 获取文件路径
-        String uri = new PathUrlUtils().getJarFilePath();
+        String uri = new TestGroupUtils().getJarFilePath();
         Path path = Paths.get(uri);
         Path filePath = path.resolve(fileId + ".json");
         Files.delete(filePath);
@@ -66,7 +66,7 @@ public class TestGroupFileServiceImpl implements TestGroupFileService {
 
     @Override
     public String getFile(String fileId) {
-        return getEntity(fileId).getFilePath();
+        return getEntity(fileId).getTestGroupPath();
     }
 
     @Override
@@ -75,7 +75,7 @@ public class TestGroupFileServiceImpl implements TestGroupFileService {
     }
 
 
-    private FileEntity getEntity(String fileId) {
-        return fileMapper.selectList(new QueryWrapper<FileEntity>().lambda().eq(FileEntity::getFileId, fileId)).get(0);
+    private TestGroupEntity getEntity(String fileId) {
+        return fileMapper.selectList(new QueryWrapper<TestGroupEntity>().lambda().eq(TestGroupEntity::getTestGroupId, fileId)).get(0);
     }
 }

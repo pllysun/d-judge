@@ -50,7 +50,7 @@ public class JudgeController {
      * @param request 请求参数
      */
     @PostMapping(value = "/judge")
-    public ResponseResult<Object> submitProblemTestJudge(@RequestBody JudgeRequest request) throws SystemException, CompileException {
+    public ResponseResult<Object> submitProblemTestJudge(@RequestBody JudgeRequest request) throws Exception {
 
         if (request == null || request.getModeType() == null
                 || ObjectUtils.isEmpty(request.getCode())
@@ -83,7 +83,7 @@ public class JudgeController {
         return ResponseResult.exceptionError("异常错误");
     }
 
-    private ResponseResult<Object> oiJudge(JudgeRequest request) throws SystemException, CompileException {
+    private ResponseResult<Object> oiJudge(JudgeRequest request) throws Exception {
         return oiJudgeService.Judge(request);
     }
 }

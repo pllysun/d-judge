@@ -1,11 +1,11 @@
 package com.dong.djudge.controller;
 
 import com.dong.djudge.dto.TestGroupFileDTO;
-import com.dong.djudge.enums.ResultStatus;
 import com.dong.djudge.enums.UpLoadFileEnum;
 import com.dong.djudge.service.TestGroupFileService;
 import com.dong.djudge.util.JsonUtils;
 import com.dong.djudge.util.ResponseResult;
+import com.dong.djudge.util.TestGroupUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,12 +20,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 
@@ -57,11 +53,11 @@ public class TestGroupFileController {
      * 参数类型有三种，一种是测试Json，一种是测试Json的网络URL，一种是测试文件
      */
     @PostMapping(value = "/uploadFile")
-    public ResponseResult<String> uploadFile(@ModelAttribute @Validated @RequestBody TestGroupFileDTO testGroupFileDTO, BindingResult bindingResult) throws IOException {
+    public ResponseResult<String> uploadFile(@ModelAttribute @Validated @RequestBody TestGroupFileDTO testGroupFileDTO, BindingResult bindingResult) throws Exception {
         return uploadFile(testGroupFileDTO, bindingResult, true);
     }
 
-    private ResponseResult<String> uploadFile(TestGroupFileDTO testGroupFileDTO, BindingResult bindingResult, boolean isUpload) throws IOException {
+    private ResponseResult<String> uploadFile(TestGroupFileDTO testGroupFileDTO, BindingResult bindingResult, boolean isUpload) throws Exception {
         log.info("type:{}, content:{}", testGroupFileDTO.getType(), testGroupFileDTO.getContent());
         if (bindingResult.hasErrors()) {
             List<FieldError> fieldErrors = bindingResult.getFieldErrors();
@@ -94,21 +90,10 @@ public class TestGroupFileController {
                 }
                 break;
             case 1:
-                // 检查URL是否有效
-                if (!isValidUrl(testGroupFileDTO.getContent())) {
-                    return ResponseResult.failResponse("无效的URL！");
-                }
-                // 从URL获取JSON内容
                 String jsonContent;
-                try {
-                    jsonContent = getJsonFromUrl(testGroupFileDTO.getContent());
-                } catch (Exception e) {
-                    return new ResponseResult<>(ResultStatus.DOWNLOAD_ERROR.getCode(), "从URL检索JSON内容失败", e.getCause().getMessage());
-                }
-
-                // 检查检索到的内容是否是有效的JSON
-                if (JsonUtils.isValidJson(jsonContent)) {
-                    return ResponseResult.failResponse("无效的JSON 内容！");
+                jsonContent = TestGroupUtils.getJsonForURL(testGroupFileDTO.getContent());
+                if(jsonContent==null){
+                    return ResponseResult.failResponse("无效的URL或URL内容无法解析！");
                 }
                 // 处理JSON内容或调用fileService.uploadFile方法
                 if (isUpload) {
@@ -154,26 +139,6 @@ public class TestGroupFileController {
         return new ResponseResult<>(200, "上传成功", fileId);
     }
 
-    // 检查给定字符串是否是有效URL的辅助方法
-    private boolean isValidUrl(String url) {
-        try {
-            new URL(url).toURI();
-            return true;
-        } catch (MalformedURLException | URISyntaxException e) {
-            return false;
-        }
-    }
-
-    // 从URL检索JSON内容的辅助方法
-    private String getJsonFromUrl(String url) throws Exception {
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            return restTemplate.getForObject(url, String.class);
-        } catch (Exception e) {
-            log.error("从URL检索JSON内容失败：{}", url, e);
-            throw new Exception("从URL检索JSON内容失败", e);
-        }
-    }
 
     /**
      * 下载文件
@@ -198,7 +163,7 @@ public class TestGroupFileController {
      * @return 响应信息
      */
     @PutMapping(value = "/updateFile" ,consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseResult<String> updateFile(@ModelAttribute @Validated TestGroupFileDTO testGroupFileIdDTO, BindingResult bindingResult) throws IOException {
+    public ResponseResult<String> updateFile(@ModelAttribute @Validated TestGroupFileDTO testGroupFileIdDTO, BindingResult bindingResult) throws Exception {
         if (testGroupFileIdDTO.getFileId() == null) {
             return ResponseResult.failResponse("fileId不能为空");
         }

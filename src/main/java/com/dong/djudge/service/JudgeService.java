@@ -1,18 +1,17 @@
 package com.dong.djudge.service;
 
-import cn.hutool.json.JSONArray;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.dong.djudge.exception.CompileException;
 import com.dong.djudge.exception.SystemException;
 import com.dong.djudge.dto.JudgeRequest;
-import com.dong.djudge.entity.FileEntity;
+import com.dong.djudge.entity.TestGroupEntity;
 import com.dong.djudge.util.ResponseResult;
 
 /**
  * @author 阿东
  * @date 2023/9/6 [0:23]
  */
-public interface JudgeService extends IService<FileEntity> {
+public interface JudgeService extends IService<TestGroupEntity> {
 
     /**
      * 判题接口通用实现类
@@ -21,5 +20,5 @@ public interface JudgeService extends IService<FileEntity> {
      * @throws SystemException 系统错误
      * @throws CompileException 编译错误
      */
-    ResponseResult<Object> Judge(JudgeRequest request) throws SystemException, CompileException;
+    ResponseResult<Object> Judge(JudgeRequest request) throws Exception;
 }

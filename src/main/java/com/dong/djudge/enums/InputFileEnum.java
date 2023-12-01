@@ -16,15 +16,15 @@ public enum InputFileEnum {
     /**
      * Json文本，所以的测试案例全部通过Json格式书写，最普通的方式便是把Json直接当做变量传过来，适合于普通测试测试数据量比较小的情况下。
      */
-    Json(0,"Json"),
+    JSON(0,"JSON"),
     /**
      * 对象存储，Object Storage Service,传过来一个链接，下载对象储存文件然后解析文件里面的Json文本，适合于第一次运行大数据的测试文本以及中小测试文本
      */
-    OSS(1,"OSS"),
+    URL(1,"URL"),
     /**
      * 本地文件，直接读取本地的Json文本，适用于多次读取以及大型测试文本
      */
-    LocalFile(2,"LocalFile");
+    FILE(2,"FILE");
 
 
     /**
