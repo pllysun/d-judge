@@ -75,12 +75,27 @@ public class RunTask {
     }
 
     private void getRunResultList(JudgeRequest request, String fileId, LanguageConfig languageConfigByName, List<RunResult> list) throws SystemException {
-        JSONArray objects;
         for (TestCaseGroup testCaseGroup : JsonUtils.getTestCaseGroupList(request.getStandardCode().getInputFileContext())) {
             for (String test : testCaseGroup.getInput()) {
-                objects= runService.testCase(languageConfigByName, request, fileId, test);
-                List<RunResult> runResults = JSON.parseArray(objects.toString(), RunResult.class);
-                list.add(runResults.get(0));
+                Thread.startVirtualThread(()->{
+                    JSONArray  objects= null;
+                    try {
+                        objects = runService.testCase(languageConfigByName, request, fileId, test);
+                    } catch (SystemException e) {
+                        System.out.println("lklklkl");
+                        System.out.println(e.getMessage());
+                    }
+                    JSONArray finalObjects = objects;
+                    List<RunResult> runResults = JSON.parseArray(finalObjects.toString(), RunResult.class);
+                    list.add(runResults.get(0));
+                    System.out.println("--------------");
+                });
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.println(list);
             }
         }
     }

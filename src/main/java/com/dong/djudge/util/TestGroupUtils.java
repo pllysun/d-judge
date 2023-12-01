@@ -60,15 +60,20 @@ public class TestGroupUtils {
         }
     }
 
-    public static String getJsonForFile(String filePath) {
+    public static String getJsonForFile(String filePath) throws FileNotFoundException {
         String fileContent = null;
         try {
             // 创建File对象
             File file = new File(filePath);
 
             // 使用FileInputStream读取文件内容
-            FileInputStream fileInputStream = new FileInputStream(file);
+            FileInputStream fileInputStream;
+            try {
+                fileInputStream = new FileInputStream(file);
 
+            } catch (FileNotFoundException e) {
+                throw new FileNotFoundException("文件不存在");
+            }
             // 使用FileCopyUtils将文件内容转换为字节数组
             byte[] fileBytes = FileCopyUtils.copyToByteArray(fileInputStream);
 
