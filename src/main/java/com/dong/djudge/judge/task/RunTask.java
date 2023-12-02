@@ -82,11 +82,9 @@ public class RunTask {
                 Thread.startVirtualThread(()->{
                     JSONArray  objects= null;
                     try {
-                        System.out.println(test);
                         objects = runService.testCase(languageConfigByName, request, fileId, test);
                     } catch (SystemException e) {
-                        System.out.println("lklklkl");
-                        System.out.println(e.getMessage());
+                        throw new RuntimeException(e);
                     }
                     JSONArray finalObjects = objects;
                     List<RunResult> runResults = JSON.parseArray(finalObjects.toString(), RunResult.class);
