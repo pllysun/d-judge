@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author 阿东
@@ -75,11 +76,13 @@ public class RunTask {
     }
 
     private void getRunResultList(JudgeRequest request, String fileId, LanguageConfig languageConfigByName, List<RunResult> list) throws SystemException {
+        AtomicInteger i= new AtomicInteger();
         for (TestCaseGroup testCaseGroup : JsonUtils.getTestCaseGroupList(request.getStandardCode().getInputFileContext())) {
             for (String test : testCaseGroup.getInput()) {
                 Thread.startVirtualThread(()->{
                     JSONArray  objects= null;
                     try {
+                        System.out.println(test);
                         objects = runService.testCase(languageConfigByName, request, fileId, test);
                     } catch (SystemException e) {
                         System.out.println("lklklkl");
@@ -88,15 +91,17 @@ public class RunTask {
                     JSONArray finalObjects = objects;
                     List<RunResult> runResults = JSON.parseArray(finalObjects.toString(), RunResult.class);
                     list.add(runResults.get(0));
-                    System.out.println("--------------");
+                    System.out.println(i.getAndIncrement());
                 });
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                System.out.println(list);
+
             }
         }
+        try {
+            Thread.sleep(10000);
+            System.out.println(list);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 }

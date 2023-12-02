@@ -59,7 +59,7 @@ public class OiRunServiceImpl implements RunService {
                 fileId,
                 testCaseContent,
                 false);
-        SandboxRun.delFile(fileId);
+        //SandboxRun.delFile(fileId);
         log.info("testCase:{}", objects);
         return objects;
     }
