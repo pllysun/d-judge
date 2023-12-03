@@ -45,11 +45,11 @@ public class JudgeServiceOiImpl extends ServiceImpl<TestGroupMapper, TestGroupEn
     public ResponseResult<Object> Judge(JudgeRequest request) throws Exception {
         // 编译代码 并且得到沙盒里代码编译的文件id
         String fileId= compileService.compile(request);
-        System.out.println("--------");
-        System.out.println(fileId);
-        System.out.println("--------");
         String inputFileContext = request.getOiString();
         List<RunResult> runResults = runTask.runTask(request, fileId);
+        if(runResults==null){
+            return ResponseResult.failResponse("执行出错");
+        }
         return ResponseResult.successResponse(runResults.get(0));
     }
 

@@ -42,7 +42,7 @@ public class StandardCodeServiceImpl extends ServiceImpl<StandardCodeMapper, Sta
     @Autowired
     private CompileService compileService;
 
-    private RunTask runTask= SpringUtil.getBean(RunTask.class);
+    private final RunTask runTask= SpringUtil.getBean(RunTask.class);
     @Override
     public ResponseResult<String> standardCodeRun(StaredCodeDTO staredCodeDTO) throws Exception {
         LambdaQueryWrapper<TestGroupEntity> testGroupEntityLambdaQueryWrapper = new QueryWrapper<TestGroupEntity>().lambda();
@@ -54,7 +54,13 @@ public class StandardCodeServiceImpl extends ServiceImpl<StandardCodeMapper, Sta
         JudgeRequest judgeRequest = getJudgeRequest(staredCodeDTO);
         String fileId= compileService.compile(judgeRequest);
         List<RunResult> runResults = runTask.runTask(judgeRequest, fileId);
-        return null;
+        if(runResults==null){
+            return ResponseResult.failResponse("执行出错");
+        }
+        for (RunResult runResult : runResults) {
+
+        }
+        return ResponseResult.successResponse("");
     }
 
     private static JudgeRequest getJudgeRequest(StaredCodeDTO staredCodeDTO) {

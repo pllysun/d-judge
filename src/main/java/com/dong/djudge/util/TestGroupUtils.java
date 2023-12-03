@@ -18,7 +18,7 @@ public class TestGroupUtils {
     public String getJarFilePath() {
         Resource resource = new ClassPathResource("");
         URL file = resource.getUrl();
-        return file.getPath().replace("test-classes/", "").replace("target/", "").replace("/G", "G").replace("/classes","") + "file/";
+        return file.getPath().substring(1, file.getPath().length() - 1).replace("test-classes", "").replace("target/", "").replace("classes","")+ "file/";
     }
 
     public static String getJsonForURL(String url) throws Exception {

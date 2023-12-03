@@ -34,6 +34,10 @@ public class JudgeRequest implements Serializable {
      */
     private String language;
     /**
+     * 测试测试集按照单个测试来计算时间和内存还是总的测试集来计算时间和内存（默认:true）
+     */
+    private String isSingleTest;
+    /**
      * 当且仅当评测类型为OI时，这个字段为必填。其余都不需要填写
      */
     private String oiString;

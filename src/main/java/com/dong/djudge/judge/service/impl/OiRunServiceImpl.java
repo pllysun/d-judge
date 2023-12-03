@@ -21,10 +21,7 @@ import java.util.List;
 @Slf4j(topic = "doj")
 public class OiRunServiceImpl implements RunService {
 
-    /**
-     * 最大进程数
-     */
-    private static final int maxProcessNumber = 128;
+
     /**
      * 默认最大运行时间，单位ns 10s
      */

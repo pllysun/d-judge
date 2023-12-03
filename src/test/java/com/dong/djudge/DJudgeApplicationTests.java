@@ -16,8 +16,8 @@ class DJudgeApplicationTests {
 	void contextLoads() {
 		Resource resource = new ClassPathResource("");
 		URL file = resource.getUrl();
-		System.out.println(file.getPath().replace("test-classes/", "").replace("target/", "").replace("/G", "G") + "file/");
-
+		String path = file.getPath();
+		System.out.println(path.substring(1, path.length() - 1).replace("test-classes", "").replace("target/", "")+ "file/");
 	}
 
 }
