@@ -54,9 +54,6 @@ public class StandardCodeServiceImpl extends ServiceImpl<StandardCodeMapper, Sta
         JudgeRequest judgeRequest = getJudgeRequest(staredCodeDTO);
         String fileId= compileService.compile(judgeRequest);
         List<RunResult> runResults = runTask.runTask(judgeRequest, fileId);
-        System.out.println("---------");
-        System.out.println(runResults);
-        System.out.println("---------");
         return null;
     }
 

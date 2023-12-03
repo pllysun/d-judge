@@ -1,5 +1,7 @@
 package com.dong.djudge.util;
 
+import cn.hutool.core.io.resource.ClassPathResource;
+import cn.hutool.core.io.resource.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.system.ApplicationHome;
 import org.springframework.util.FileCopyUtils;
@@ -14,9 +16,9 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public class TestGroupUtils {
     public String getJarFilePath() {
-        ApplicationHome home = new ApplicationHome(getClass());
-        File jarFile = home.getSource();
-        return jarFile.getParentFile().toString();
+        Resource resource = new ClassPathResource("");
+        URL file = resource.getUrl();
+        return file.getPath().replace("test-classes/", "").replace("target/", "").replace("/G", "G").replace("/classes","") + "file/";
     }
 
     public static String getJsonForURL(String url) throws Exception {
