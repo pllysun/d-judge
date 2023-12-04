@@ -25,19 +25,19 @@ public class OiRunServiceImpl implements RunService {
     /**
      * 默认最大运行时间，单位ns 10s
      */
-    Long maxTime = 10000000000L;
+    Integer maxTime = 1000;
     /**
-     * 最大运行内存，单位byte 128M
+     * 最大运行内存，单位Mb  128M
      */
-    Long maxMemory = 134217728L;
+    Integer maxMemory = 128;
     /**
-     * 最大栈空间，单位byte 128M
+     * 最大栈空间，单位Mb  128M
      */
-    Long maxStack = 10240L;
+    Integer maxStack = 128;
     /**
      * 最大输出，单位byte 10K
      */
-    Integer maxOutput = 134217728;
+    Integer maxOutput = 10240;
 
     @Override
     public JSONArray testCase(LanguageConfig languageConfig, JudgeRequest request, String fileId, String testCaseContent) throws SystemException {

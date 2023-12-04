@@ -4,20 +4,20 @@
     "input": [
       {
         "id": 0,
-        "value": "5 4"
+        "value": "9\n"
       },
       {
         "id": 1,
-        "value": "3 2"
+        "value": "5\n"
       }
     ]
   },
   {
-    "gid": 1,
+    "gid": 0,
     "input": [
       {
         "id": 0,
-        "value": "5 4"
+        "value": "9\n"
       }
     ]
   }

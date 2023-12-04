@@ -237,9 +237,9 @@ public class SandboxRun {
      */
     public static JSONArray testCase(List<String> args,
                                      List<String> envs,
-                                     Long maxTime,
-                                     Long maxMemory,
-                                     Long maxOutputSize,
+                                     Integer maxTime,
+                                     Integer maxMemory,
+                                     Integer maxOutputSize,
                                      Integer maxStack,
                                      String exeName,
                                      String fileId,

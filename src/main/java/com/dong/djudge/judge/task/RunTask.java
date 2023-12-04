@@ -7,8 +7,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dong.djudge.dto.JudgeRequest;
 import com.dong.djudge.entity.TestCaseGroup;
+import com.dong.djudge.entity.TestCaseGroupRoot;
 import com.dong.djudge.entity.TestGroupEntity;
 import com.dong.djudge.entity.judge.RunResult;
+import com.dong.djudge.entity.judge.RunResultForTestGroup;
+import com.dong.djudge.entity.judge.RunResultRoot;
 import com.dong.djudge.enums.InputFileEnum;
 import com.dong.djudge.enums.ModeEnum;
 import com.dong.djudge.judge.LanguageConfigLoader;
@@ -24,6 +27,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,30 +44,30 @@ public class RunTask {
     @Autowired
     TestGroupMapper testGroupMapper;
 
-    public List<RunResult> runTask(JudgeRequest request, String fileId) throws Exception {
+    public RunResultRoot runTask(JudgeRequest request, String fileId) throws Exception {
         LanguageConfigLoader languageConfigLoader = new LanguageConfigLoader();
         //获取语言配置
         LanguageConfig languageConfigByName = languageConfigLoader.getLanguageConfigByName(request.getLanguage());
         JSONArray objects;
-        List<RunResult> runResultList = new ArrayList<>();
+        RunResultRoot runResultRoot;
         if (request.getModeType().equals(ModeEnum.OI.getName())) {
             objects = runService.testCase(languageConfigByName, request, fileId, request.getOiString());
             RunResult runResult = JSON.parseArray(objects.toString(), RunResult.class).get(0);
-            runResultList.add(runResult);
+            runResultRoot = new RunResultRoot(0, 0, runResult);
         } else {
 
             if (request.getStandardCode().getInputFileType().equals(InputFileEnum.JSON.getValue())) {
                 if (!JsonUtils.isValidJson(request.getStandardCode().getInputFileContext())) {
                     return null;
                 }
-                runResultList = getRunResultList(request, fileId, languageConfigByName);
+                runResultRoot = getRunResultList(request, fileId, languageConfigByName);
             } else if (request.getStandardCode().getInputFileType().equals(InputFileEnum.URL.getValue())) {
                 String jsonForURL = CommonUtils.getJsonForURL(request.getStandardCode().getInputFileContext());
                 if (jsonForURL == null) {
                     return null;
                 }
                 request.getStandardCode().setInputFileContext(jsonForURL);
-                runResultList = getRunResultList(request, fileId, languageConfigByName);
+                runResultRoot = getRunResultList(request, fileId, languageConfigByName);
             } else {
                 LambdaQueryWrapper<TestGroupEntity> testGroupEntityLambdaQueryWrapper = new QueryWrapper<TestGroupEntity>().lambda();
                 testGroupEntityLambdaQueryWrapper.eq(TestGroupEntity::getTestGroupId, request.getStandardCode().getInputFileContext());
@@ -73,46 +77,53 @@ public class RunTask {
                 }
                 String jsonForFile = CommonUtils.getJsonForFile(testGroupEntity.getTestGroupId());
                 request.getStandardCode().setInputFileContext(jsonForFile);
-                runResultList = getRunResultList(request, fileId, languageConfigByName);
+                runResultRoot = getRunResultList(request, fileId, languageConfigByName);
             }
 
         }
-        return runResultList;
+        return runResultRoot;
     }
 
-    private List<RunResult> getRunResultList(JudgeRequest request, String fileId, LanguageConfig languageConfigByName) {
+    private RunResultRoot getRunResultList(JudgeRequest request, String fileId, LanguageConfig languageConfigByName) {
         //通过虚拟线程同时运行所有测试用例
-        List<RunResult> list;
+        RunResultRoot runResultRoot = new RunResultRoot();
         try (ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor()) {
-            List<Future<RunResult>> futures = new ArrayList<>();
-            for (TestCaseGroup testCaseGroup : JsonUtils.getTestCaseGroupList(request.getStandardCode().getInputFileContext())) {
-                for (String test : testCaseGroup.getInput()) {
-                    Callable<RunResult> task = () -> {
+            List<Future<RunResultForTestGroup>> futures = new ArrayList<>();
+            for (TestCaseGroupRoot testCaseGroupRoot : JsonUtils.getTestCaseGroupList(request.getStandardCode().getInputFileContext())) {
+                Integer gid=testCaseGroupRoot.getGid();
+                for (TestCaseGroup testCaseGroup : testCaseGroupRoot.getInput()) {
+                    Integer id=testCaseGroup.getId();
+                    Callable<RunResultForTestGroup> task = () -> {
                         // 执行任务，这里简单返回一个字符串
-                        JSONArray finalObjects = runService.testCase(languageConfigByName, request, fileId, test);
-                        List<RunResult> runResults = null;
-                        if (finalObjects != null) {
-                            runResults = JSON.parseArray(finalObjects.toString(), RunResult.class);
-                        }
-                        RunResult runResult = null;
-                        if (runResults != null) {
-                            runResult = runResults.get(0);
+                        JSONArray finalObjects = runService.testCase(languageConfigByName, request, fileId, testCaseGroup.getValue());
+                        RunResultForTestGroup runResult = JSON.parseArray(finalObjects.toString(), RunResultForTestGroup.class).get(0);
+                        runResult.setGid(gid);
+                        runResult.setId(id);
+                        if (!"Accepted".equals(runResult.getOriginalStatus())) {
+                            for (Future<RunResultForTestGroup> remainingFuture : futures) {
+                                remainingFuture.cancel(true);
+                            }
+                            runResultRoot.setErrorInfo(runResult.getFiles().getStderr());
+                            runResultRoot.setState(runResult.getOriginalStatus());
                         }
                         return runResult;
                     };
-                    Future<RunResult> future = executorService.submit(task);
+                    Future<RunResultForTestGroup> future = executorService.submit(task);
                     futures.add(future);
                 }
             }
-            list = new ArrayList<>();
-            for (Future<RunResult> future : futures) {
+            List<RunResultForTestGroup> list = new ArrayList<>();
+            for (Future<RunResultForTestGroup> future : futures) {
                 list.add(future.get());
             }
+            runResultRoot.setRunResult(list);
             executorService.shutdown();
+        } catch (CancellationException e) {
+            log.warn("任务取消:{}", e.getMessage());
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         }
-        return list;
+        return runResultRoot;
 
     }
 }

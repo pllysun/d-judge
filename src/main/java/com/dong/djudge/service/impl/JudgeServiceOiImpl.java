@@ -4,7 +4,7 @@ import cn.hutool.extra.spring.SpringUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dong.djudge.dto.JudgeRequest;
 import com.dong.djudge.entity.TestGroupEntity;
-import com.dong.djudge.entity.judge.RunResult;
+import com.dong.djudge.entity.judge.RunResultRoot;
 import com.dong.djudge.judge.task.RunTask;
 import com.dong.djudge.mapper.TestGroupMapper;
 import com.dong.djudge.service.CompileService;
@@ -13,8 +13,6 @@ import com.dong.djudge.service.JudgeService;
 import com.dong.djudge.util.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * @author 阿东
@@ -45,11 +43,11 @@ public class JudgeServiceOiImpl extends ServiceImpl<TestGroupMapper, TestGroupEn
         // 编译代码 并且得到沙盒里代码编译的文件id
         String fileId = compileService.compile(request);
         String inputFileContext = request.getOiString();
-        List<RunResult> runResults = runTask.runTask(request, fileId);
-        if (runResults == null) {
+        RunResultRoot runResultRoot = runTask.runTask(request, fileId);
+        if (runResultRoot == null) {
             return ResponseResult.failResponse("执行出错");
         }
-        return ResponseResult.ok(runResults.get(0));
+        return ResponseResult.ok(runResultRoot.getRunResult().get(0));
     }
 
 }

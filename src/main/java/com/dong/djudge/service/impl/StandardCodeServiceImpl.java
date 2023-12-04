@@ -8,8 +8,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dong.djudge.dto.JudgeRequest;
 import com.dong.djudge.dto.StaredCodeDTO;
 import com.dong.djudge.entity.StandardCodeEntity;
+import com.dong.djudge.entity.TestCaseGroup;
+import com.dong.djudge.entity.TestCaseGroupRoot;
 import com.dong.djudge.entity.TestGroupEntity;
 import com.dong.djudge.entity.judge.RunResult;
+import com.dong.djudge.entity.judge.RunResultRoot;
 import com.dong.djudge.entity.judge.StandardCode;
 import com.dong.djudge.enums.CodeRunTypeEnum;
 import com.dong.djudge.enums.InputFileEnum;
@@ -26,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 樊东升
@@ -70,21 +74,36 @@ public class StandardCodeServiceImpl extends ServiceImpl<StandardCodeMapper, Sta
             return ResponseResult.failResponse("该测试集文件不存在");
         }
         String fileId = compileService.compile(judgeRequest);
-        List<RunResult> runResults = runTask.runTask(judgeRequest, fileId);
-        if (runResults == null) {
+        RunResultRoot runResultRoot = runTask.runTask(judgeRequest, fileId);
+        if (runResultRoot == null) {
             return ResponseResult.failResponse("执行出错");
         }
-        List<String> answer = new ArrayList<>();
-        for (RunResult runResult : runResults) {
-            answer.add(runResult.getFiles().getStdout());
+        if (runResultRoot.getState() != null && !"Accepted".equals(runResultRoot.getState())) {
+            return ResponseResult.failResponse(runResultRoot.getState());
         }
-        String jsonString = JSON.toJSONString(answer);
-        String codeId = CommonUtils.generateRandomUpperCaseWithPrefix("SC-", 12);
-        CommonUtils.writeFile(codeId, jsonString);
+        List<TestCaseGroupRoot> list = new ArrayList<>();
+        for (Integer i : runResultRoot.getRunResult().keySet()) {
+            TestCaseGroupRoot testCaseGroupRoot = new TestCaseGroupRoot();
+            Map<Integer, RunResult> integerRunResultMap = runResultRoot.getRunResult().get(i);
+            for (Integer j : integerRunResultMap.keySet()) {
+                TestCaseGroup testCaseGroup = new TestCaseGroup();
+                RunResult runResult = integerRunResultMap.get(j);
+                testCaseGroup.setId(j);
+                testCaseGroup.setValue(runResult.getFiles().getStdout());
+                if (testCaseGroupRoot.getInput() == null) {
+                    testCaseGroupRoot.setInput(new ArrayList<>());
+                }
+                testCaseGroupRoot.getInput().add(testCaseGroup);
+            }
+            list.add(testCaseGroupRoot);
+        }
+        String json = JSON.toJSONString(list);
+        String jsonFileId = CommonUtils.generateRandomUpperCaseWithPrefix("SC-", 12);
+        CommonUtils.writeFile(jsonFileId, json);
         StandardCodeEntity standardCodeEntity = new StandardCodeEntity();
-        standardCodeEntity.setCodeId(codeId);
+        standardCodeEntity.setCodeId(jsonFileId);
         standardCodeEntity.setTestGroupId(staredCodeDTO.getTestGroupId());
         standardCodeMapper.insert(standardCodeEntity);
-        return ResponseResult.ok(codeId);
+        return ResponseResult.ok(jsonFileId);
     }
 }
