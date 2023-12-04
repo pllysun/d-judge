@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 @Data
 @TableName(value="standard_code")
 public class StandardCodeEntity {
-    @TableId(value = "id",type = IdType.AUTO)
+    @TableId(value = "id",type = IdType.NONE)
     private Long id;
     private String codeId;
     private String testGroupId;

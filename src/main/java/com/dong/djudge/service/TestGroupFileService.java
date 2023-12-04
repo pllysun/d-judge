@@ -3,12 +3,12 @@ package com.dong.djudge.service;
 import java.io.IOException;
 
 public interface TestGroupFileService {
-    public String uploadFile(String value);
+     String uploadFile(String value) throws Exception;
 
-    void deleteFile(String fileId) throws IOException;
+    void deleteFile(String fileId) throws Exception;
 
     String getFile(String fileId);
 
-    void updateFile(String fileId,String value) throws IOException;
+    void updateFile(String fileId,String value) throws Exception;
 
 }

@@ -42,16 +42,16 @@ public class CompilerTask {
             testCasesDir = compilerService.compile(languageConfig, request.getCode(), request.getLanguage(), null);
             System.out.println(testCasesDir);
         } catch (CompileException e) {
-            log.error("编译错误:{}", e.getMessage());
+            log.warn("编译错误:{}", e.getStderr());
             throw new CompileException("编译错误:" + e.getMessage(), e.getStdout(), e.getStderr());
         } catch (SystemException e) {
-            log.error("系统错误:{}", e.getMessage());
+            log.warn("系统错误:{}", e.getMessage());
             throw new CompileException("系统错误:" + e.getMessage(), e.getStdout(), e.getStderr());
         } catch (SubmitException e) {
-            log.error("提交错误:{}", e.getMessage());
+            log.warn("提交错误:{}", e.getMessage());
             throw new CompileException("提交错误:" + e.getMessage(), e.getStdout(), e.getStderr());
         } catch (Exception e) {
-            log.error("未知异常:{}", e.getMessage());
+            log.warn("未知异常:{}", e.getMessage());
             throw new CompileException("未知异常" + e.getMessage(), "0", "0");
         }
         return testCasesDir;

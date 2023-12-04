@@ -25,8 +25,7 @@ public class StandardCodeController {
         if(bindingResult.hasErrors()){
             return ResponseResult.failResponse(bindingResult.getFieldErrors().get(0).getDefaultMessage());
         }
-        standardCodeService.standardCodeRun(staredCodeDTO);
-        return null;
+        return standardCodeService.standardCodeRun(staredCodeDTO);
     }
 
 }

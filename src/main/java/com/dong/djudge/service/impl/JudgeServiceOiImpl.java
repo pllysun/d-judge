@@ -50,7 +50,7 @@ public class JudgeServiceOiImpl extends ServiceImpl<TestGroupMapper, TestGroupEn
         if(runResults==null){
             return ResponseResult.failResponse("执行出错");
         }
-        return ResponseResult.successResponse(runResults.get(0));
+        return ResponseResult.ok(runResults.get(0));
     }
 
 }

@@ -15,8 +15,8 @@ import com.dong.djudge.judge.LanguageConfigLoader;
 import com.dong.djudge.judge.entity.LanguageConfig;
 import com.dong.djudge.judge.service.RunService;
 import com.dong.djudge.mapper.TestGroupMapper;
+import com.dong.djudge.util.CommonUtils;
 import com.dong.djudge.util.JsonUtils;
-import com.dong.djudge.util.TestGroupUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -59,7 +59,7 @@ public class RunTask {
                 }
                 runResultList = getRunResultList(request, fileId, languageConfigByName);
             } else if (request.getStandardCode().getInputFileType().equals(InputFileEnum.URL.getValue())) {
-                String jsonForURL = TestGroupUtils.getJsonForURL(request.getStandardCode().getInputFileContext());
+                String jsonForURL = CommonUtils.getJsonForURL(request.getStandardCode().getInputFileContext());
                 if (jsonForURL == null) {
                     return null;
                 }
@@ -72,7 +72,7 @@ public class RunTask {
                 if (testGroupEntity == null) {
                     return null;
                 }
-                String jsonForFile = TestGroupUtils.getJsonForFile(testGroupEntity.getTestGroupPath());
+                String jsonForFile = CommonUtils.getJsonForFile(testGroupEntity.getTestGroupPath());
                 request.getStandardCode().setInputFileContext(jsonForFile);
                 runResultList = getRunResultList(request, fileId, languageConfigByName);
             }

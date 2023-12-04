@@ -1,6 +1,7 @@
 package com.dong.djudge.service.impl;
 
 import cn.hutool.extra.spring.SpringUtil;
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -20,10 +21,13 @@ import com.dong.djudge.mapper.StandardCodeMapper;
 import com.dong.djudge.mapper.TestGroupMapper;
 import com.dong.djudge.service.CompileService;
 import com.dong.djudge.service.StandardCodeService;
+import com.dong.djudge.util.CommonUtils;
 import com.dong.djudge.util.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -57,10 +61,19 @@ public class StandardCodeServiceImpl extends ServiceImpl<StandardCodeMapper, Sta
         if(runResults==null){
             return ResponseResult.failResponse("执行出错");
         }
+        List<String> answer=new ArrayList<>();
         for (RunResult runResult : runResults) {
-
+            answer.add(runResult.getFiles().getStdout());
         }
-        return ResponseResult.successResponse("");
+        String jsonString = JSON.toJSONString(answer);
+        String codeId = CommonUtils.generateRandomUpperCaseWithPrefix("SC-", 12);
+        String path = CommonUtils.writeFile(codeId, jsonString);
+        StandardCodeEntity standardCodeEntity = new StandardCodeEntity();
+        standardCodeEntity.setCodeId(codeId);
+        standardCodeEntity.setCodePath(path);
+        standardCodeEntity.setTestGroupId(staredCodeDTO.getTestGroupId());
+        standardCodeMapper.insert(standardCodeEntity);
+        return ResponseResult.ok(codeId);
     }
 
     private static JudgeRequest getJudgeRequest(StaredCodeDTO staredCodeDTO) {

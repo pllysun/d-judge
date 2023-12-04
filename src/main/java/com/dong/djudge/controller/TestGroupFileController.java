@@ -3,9 +3,9 @@ package com.dong.djudge.controller;
 import com.dong.djudge.dto.TestGroupFileDTO;
 import com.dong.djudge.enums.UpLoadFileEnum;
 import com.dong.djudge.service.TestGroupFileService;
+import com.dong.djudge.util.CommonUtils;
 import com.dong.djudge.util.JsonUtils;
 import com.dong.djudge.util.ResponseResult;
-import com.dong.djudge.util.TestGroupUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +91,7 @@ public class TestGroupFileController {
                 break;
             case 1:
                 String jsonContent;
-                jsonContent = TestGroupUtils.getJsonForURL(testGroupFileDTO.getContent());
+                jsonContent = CommonUtils.getJsonForURL(testGroupFileDTO.getContent());
                 if(jsonContent==null){
                     return ResponseResult.failResponse("无效的URL或URL内容无法解析！");
                 }
@@ -178,7 +178,7 @@ public class TestGroupFileController {
      * @return 响应信息
      */
     @DeleteMapping(value = "/DeleteFile")
-    public ResponseResult<String> deleteFile(String fileId) {
+    public ResponseResult<String> deleteFile(String fileId) throws Exception {
         if (fileId == null || fileId.isBlank()) {
             return ResponseResult.failResponse("fileId参数不能为空");
         }

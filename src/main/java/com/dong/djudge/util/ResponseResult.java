@@ -6,6 +6,7 @@ package com.dong.djudge.util;
 import com.dong.djudge.enums.ResultStatus;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -15,6 +16,7 @@ import java.io.Serializable;
  */
 @Data
 public class ResponseResult<T> implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
     /**
      * 响应状态码
@@ -43,18 +45,15 @@ public class ResponseResult<T> implements Serializable {
         return new ResponseResult<T>(ResultStatus.EXCEPTION_ERROR.getCode(), msg, null);
     }
 
-    public ResponseResult<T> ok(T data) {
-        this.setData(data);
-        return this;
+    public static <T> ResponseResult<T> ok(T data) {
+        return new ResponseResult<>(ResultStatus.SUCCESS.getCode(),"成功",data);
     }
 
     public static <T> ResponseResult<T> successResponse(String msg) {
         return new ResponseResult<T>(ResultStatus.SUCCESS.getCode(), msg, null);
     }
 
-    public static <T> ResponseResult<T> successResponse(T data) {
-        return new ResponseResult<T>(ResultStatus.SUCCESS.getCode(), "成功", data);
-    }
+
 
     public static <T> ResponseResult<T> failResponse(String msg) {
         return new ResponseResult<T>(ResultStatus.FAIL.getCode(), msg, null);
