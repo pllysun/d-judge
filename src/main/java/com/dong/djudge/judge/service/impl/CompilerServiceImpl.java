@@ -33,6 +33,10 @@ public class CompilerServiceImpl implements CompilerService {
      */
     Long maxMemory = 104857600L;
 
+    static List<String> parseCompileCommand(String command) {
+        return JudgeUtils.translateCommandline(command);
+    }
+
     /**
      * 编译
      * 这个方法是编译的核心方法，只涉及到编译，不涉及运行，将源代码编译为可执行文件。
@@ -73,7 +77,7 @@ public class CompilerServiceImpl implements CompilerService {
         JSONObject compileResult = (JSONObject) result.get(0);
         log.info("compileResult:{}", compileResult);
         // 检查编译结果的状态，如果不是"Accepted"，则抛出CompileError异常
-        String status="status";
+        String status = "status";
         if (compileResult.getInt(status).intValue() != Constants.Judge.STATUS_ACCEPTED.getStatus()) {
             throw new CompileException("Compile Error.", ((JSONObject) compileResult.get("files")).getStr("stdout"),
                     ((JSONObject) compileResult.get("files")).getStr("stderr"));
@@ -90,9 +94,5 @@ public class CompilerServiceImpl implements CompilerService {
 
         // 返回可执行文件的文件ID
         return fileId;
-    }
-
-    static List<String> parseCompileCommand(String command) {
-        return JudgeUtils.translateCommandline(command);
     }
 }

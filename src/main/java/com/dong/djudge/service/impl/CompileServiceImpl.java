@@ -1,7 +1,7 @@
 package com.dong.djudge.service.impl;
 
-import com.dong.djudge.exception.CompileException;
 import com.dong.djudge.dto.JudgeRequest;
+import com.dong.djudge.exception.CompileException;
 import com.dong.djudge.judge.task.CompilerTask;
 import com.dong.djudge.service.CompileService;
 import lombok.extern.slf4j.Slf4j;
@@ -18,13 +18,15 @@ import org.springframework.stereotype.Service;
 public class CompileServiceImpl implements CompileService {
 
     private final CompilerTask compilerTask;
+
     @Autowired
-    public CompileServiceImpl(CompilerTask compilerTask ) {
+    public CompileServiceImpl(CompilerTask compilerTask) {
         this.compilerTask = compilerTask;
     }
+
     @Override
     public String compile(JudgeRequest judgeRequest) throws CompileException {
-        log.info("code:{}",judgeRequest.getCode());
+        log.info("code:{}", judgeRequest.getCode());
         return compilerTask.compilerTask(judgeRequest);
     }
 }

@@ -8,11 +8,17 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -134,13 +140,14 @@ public class CommonUtils {
     /**
      * 从指定文件路径读取JSON内容并返回字符串。
      *
-     * @param filePath 文件路径。
      * @return 包含文件内容的JSON字符串。
      * @throws FileNotFoundException 如果文件不存在，则抛出FileNotFoundException。
      */
-    public static String getJsonForFile(String filePath) throws FileNotFoundException {
+    public static String getJsonForFile(String fileName) throws Exception {
         String fileContent = null;
         try {
+            String baseUrl = getFilePath();
+            String filePath = baseUrl + File.separator + fileName + ".json";
             // 创建File对象
             File file = new File(filePath);
 
@@ -162,7 +169,7 @@ public class CommonUtils {
             fileInputStream.close();
         } catch (IOException e) {
             // 记录从文件检索JSON内容失败的异常信息
-            log.error("从文件检索JSON内容失败：{}", filePath, e);
+            log.error("从文件检索JSON内容失败：{}", fileName, e);
         }
         return fileContent;
     }
@@ -183,23 +190,15 @@ public class CommonUtils {
     }
 
 
-
     /**
      * 将内容写入具有指定文件标识的文件。
      *
-     * @param fileId   文件的唯一标识符。
-     * @param content  要写入文件的内容。
-     * @return         写入内容的文件路径。
+     * @param fileId  文件的唯一标识符。
+     * @param content 要写入文件的内容。
+     * @return 写入内容的文件路径。
      */
-    public static String writeFile(String fileId, String content) throws Exception {
-        // 获取文件路径
-        String uri = getFilePath();
-
-        // 获取Path对象，表示文件路径
-        Path path = Paths.get(uri);
-
-        // 创建文件路径，使用文件的唯一标识 fileId 作为文件名，并添加 .json 扩展名
-        Path filePath = path.resolve(fileId + ".json");
+    public static void writeFile(String fileId, String content) throws Exception {
+        Path filePath = getFilePathForFileId(fileId);
 
         try {
             // 将内容写入文件
@@ -219,9 +218,22 @@ public class CommonUtils {
             log.error(e.getMessage());
             log.error("文件写入失败");
         }
-
-        // 返回文件路径
-        return filePath.toString();
     }
 
+    private static Path getFilePathForFileId(String fileId) throws Exception {
+        // 获取文件路径
+        String uri = getFilePath();
+
+        // 获取Path对象，表示文件路径
+        Path path = Paths.get(uri + File.separator);
+
+        // 创建文件路径，使用文件的唯一标识 fileId 作为文件名，并添加 .json 扩展名
+        Path filePath = path.resolve(fileId + ".json");
+        return filePath;
+    }
+
+    public static boolean isFileExist(String filePath) throws Exception {
+        Path filePathForFileId = getFilePathForFileId(filePath);
+        return Files.exists(filePathForFileId);
+    }
 }

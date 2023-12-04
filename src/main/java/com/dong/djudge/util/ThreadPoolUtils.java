@@ -1,6 +1,10 @@
 package com.dong.djudge.util;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author: Himit_ZH
@@ -9,9 +13,8 @@ import java.util.concurrent.*;
  */
 public class ThreadPoolUtils {
 
-    private static ExecutorService executorService;
-
     private static final int cpuNum = Runtime.getRuntime().availableProcessors();
+    private static ExecutorService executorService;
 
     private ThreadPoolUtils() {
         //手动创建线程池.
@@ -31,16 +34,16 @@ public class ThreadPoolUtils {
                 new ThreadPoolExecutor.DiscardOldestPolicy());
     }
 
-    private static class PluginConfigHolder {
-        private final static ThreadPoolUtils INSTANCE = new ThreadPoolUtils();
-    }
-
     public static ThreadPoolUtils getInstance() {
         return PluginConfigHolder.INSTANCE;
     }
 
     public ExecutorService getThreadPool() {
         return executorService;
+    }
+
+    private static class PluginConfigHolder {
+        private final static ThreadPoolUtils INSTANCE = new ThreadPoolUtils();
     }
 
 }

@@ -7,8 +7,9 @@ package com.dong.djudge.service;
 public interface HttpService {
     /**
      * 通过url获取文件
+     *
      * @param url oss的url
      * @return 文件内容
      */
-     String getInputFileForOss(String url);
+    String getInputFileForOss(String url);
 }

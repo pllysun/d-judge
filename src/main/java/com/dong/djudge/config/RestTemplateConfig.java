@@ -1,6 +1,5 @@
 package com.dong.djudge.config;
 
-import com.dong.djudge.judge.LanguageConfigLoader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;

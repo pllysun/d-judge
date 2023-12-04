@@ -1,8 +1,8 @@
 package com.dong.djudge.judge.service;
 
 import cn.hutool.json.JSONArray;
-import com.dong.djudge.exception.SystemException;
 import com.dong.djudge.dto.JudgeRequest;
+import com.dong.djudge.exception.SystemException;
 import com.dong.djudge.judge.entity.LanguageConfig;
 
 /**

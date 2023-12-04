@@ -1,7 +1,6 @@
 package com.dong.djudge.util;
 
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 import com.dong.djudge.entity.TestCaseGroup;
 
 import java.util.List;
@@ -20,7 +19,6 @@ public class JsonUtils {
     public static List<TestCaseGroup> getTestCaseGroupList(String jsonString) {
         return JSON.parseArray(jsonString, TestCaseGroup.class);
     }
-
 
 
 }

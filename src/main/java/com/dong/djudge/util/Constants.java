@@ -42,14 +42,6 @@ public class Constants {
             this.name = name;
         }
 
-        public Integer getStatus() {
-            return status;
-        }
-
-        public String getName() {
-            return name;
-        }
-
         public static Judge getTypeByStatus(int status) {
             for (Judge judge : Judge.values()) {
                 if (judge.getStatus() == status) {
@@ -58,7 +50,16 @@ public class Constants {
             }
             return STATUS_NULL;
         }
+
+        public Integer getStatus() {
+            return status;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
+
     @Getter
     public enum JudgeMode {
         TEST("test"),
@@ -82,7 +83,7 @@ public class Constants {
         }
     }
 
-    public enum JudgeCaseMode{
+    public enum JudgeCaseMode {
         DEFAULT("default"),
         SUBTASK_LOWEST("subtask_lowest"),
         SUBTASK_AVERAGE("subtask_average"),

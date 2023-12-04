@@ -3,7 +3,11 @@ package com.dong.djudge.util;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.http.HttpServletRequest;
-import java.net.*;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 
 /**
@@ -50,7 +54,7 @@ public class IpUtils {
         }
     }
 
-    public static String getServiceIp(){
+    public static String getServiceIp() {
         InetAddress address = null;
         try {
             address = InetAddress.getLocalHost();
@@ -60,7 +64,7 @@ public class IpUtils {
         //返回IP地址
         if (address != null) {
             return address.getHostAddress();
-        }else{
+        } else {
             return null;
         }
     }

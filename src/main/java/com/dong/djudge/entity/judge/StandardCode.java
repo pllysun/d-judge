@@ -1,6 +1,5 @@
 package com.dong.djudge.entity.judge;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 /**

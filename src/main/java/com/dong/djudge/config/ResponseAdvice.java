@@ -1,10 +1,10 @@
 package com.dong.djudge.config;
 
+import com.dong.djudge.enums.ResultStatus;
+import com.dong.djudge.exception.CodeRunException;
 import com.dong.djudge.exception.CompileException;
 import com.dong.djudge.exception.SubmitException;
 import com.dong.djudge.exception.SystemException;
-import com.dong.djudge.exception.CodeRunException;
-import com.dong.djudge.enums.ResultStatus;
 import com.dong.djudge.util.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 @Slf4j
-public class ResponseAdvice  {
+public class ResponseAdvice {
     @ExceptionHandler(value = Exception.class)
     public ResponseResult<String> exceptionHandler(Exception e) {
         log.error("全局异常捕获：{}", e.getMessage());

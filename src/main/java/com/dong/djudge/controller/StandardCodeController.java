@@ -22,7 +22,7 @@ public class StandardCodeController {
 
     @PostMapping("/runStaredCode")
     public ResponseResult<String> runStaredCode(@RequestBody @Validated StaredCodeDTO staredCodeDTO, BindingResult bindingResult) throws Exception {
-        if(bindingResult.hasErrors()){
+        if (bindingResult.hasErrors()) {
             return ResponseResult.failResponse(bindingResult.getFieldErrors().get(0).getDefaultMessage());
         }
         return standardCodeService.standardCodeRun(staredCodeDTO);

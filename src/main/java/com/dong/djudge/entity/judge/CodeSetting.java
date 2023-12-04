@@ -11,17 +11,17 @@ public class CodeSetting {
     /**
      * 最大运行时间
      */
-    Long maxTime ;
+    Long maxTime;
     /**
      * 最大运行内存
      */
-    Long maxMemory ;
+    Long maxMemory;
     /**
      * 最大栈大小
      */
-    Long maxStack ;
+    Long maxStack;
     /**
      * 最大输出大小
      */
-    Integer maxOutput ;
+    Integer maxOutput;
 }

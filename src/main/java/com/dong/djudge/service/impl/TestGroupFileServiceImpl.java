@@ -1,7 +1,6 @@
 package com.dong.djudge.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dong.djudge.entity.TestGroupEntity;
 import com.dong.djudge.mapper.TestGroupMapper;
 import com.dong.djudge.service.TestGroupFileService;
@@ -10,9 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,19 +26,18 @@ public class TestGroupFileServiceImpl implements TestGroupFileService {
 
     private String getFileId(String fileId, String value, boolean isUpload) throws Exception {
         String fileID;
-        if(isUpload){
+        if (isUpload) {
             // 生成文件ID,注意:数据库限制，所以文件ID长度不能超过12位
-             fileID = CommonUtils.generateRandomUpperCaseWithPrefix("AD-", 12);
-        }else{
-            fileID=fileId;
+            fileID = CommonUtils.generateRandomUpperCaseWithPrefix("AD-", 12);
+        } else {
+            fileID = fileId;
         }
-        String path = CommonUtils.writeFile(fileID, value);
-        if(isUpload){
-            fileMapper.insert(new TestGroupEntity(fileID, path));
+        CommonUtils.writeFile(fileID, value);
+        if (isUpload) {
+            fileMapper.insert(new TestGroupEntity(fileID));
         }
         return fileID;
     }
-
 
 
     @Override
@@ -57,7 +52,7 @@ public class TestGroupFileServiceImpl implements TestGroupFileService {
 
     @Override
     public String getFile(String fileId) {
-        return getEntity(fileId).getTestGroupPath();
+        return null;
     }
 
     @Override
@@ -66,7 +61,4 @@ public class TestGroupFileServiceImpl implements TestGroupFileService {
     }
 
 
-    private TestGroupEntity getEntity(String fileId) {
-        return fileMapper.selectList(new QueryWrapper<TestGroupEntity>().lambda().eq(TestGroupEntity::getTestGroupId, fileId)).get(0);
-    }
 }

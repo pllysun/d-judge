@@ -11,8 +11,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @MapperScan("com.dong.djudge.mapper")
 public class DJudgeApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(DJudgeApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(DJudgeApplication.class, args);
+    }
 
 }

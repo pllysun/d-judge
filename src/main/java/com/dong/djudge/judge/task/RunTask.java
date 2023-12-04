@@ -36,10 +36,9 @@ import java.util.concurrent.Future;
 @Component
 @Slf4j(topic = "RunTask")
 public class RunTask {
+    private final RunService runService = SpringUtil.getBean(RunService.class);
     @Autowired
     TestGroupMapper testGroupMapper;
-
-    private final RunService runService = SpringUtil.getBean(RunService.class);
 
     public List<RunResult> runTask(JudgeRequest request, String fileId) throws Exception {
         LanguageConfigLoader languageConfigLoader = new LanguageConfigLoader();
@@ -72,7 +71,7 @@ public class RunTask {
                 if (testGroupEntity == null) {
                     return null;
                 }
-                String jsonForFile = CommonUtils.getJsonForFile(testGroupEntity.getTestGroupPath());
+                String jsonForFile = CommonUtils.getJsonForFile(testGroupEntity.getTestGroupId());
                 request.getStandardCode().setInputFileContext(jsonForFile);
                 runResultList = getRunResultList(request, fileId, languageConfigByName);
             }

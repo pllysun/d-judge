@@ -42,7 +42,7 @@ public class OiRunServiceImpl implements RunService {
     @Override
     public JSONArray testCase(LanguageConfig languageConfig, JudgeRequest request, String fileId, String testCaseContent) throws SystemException {
         List<String> args = new ArrayList<>();
-        if(request.getCodeSetting()==null){
+        if (request.getCodeSetting() == null) {
             request.setCodeSetting(new CodeSetting());
         }
         args.add(languageConfig.getRunCommand());

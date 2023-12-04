@@ -92,7 +92,7 @@ public class TestGroupFileController {
             case 1:
                 String jsonContent;
                 jsonContent = CommonUtils.getJsonForURL(testGroupFileDTO.getContent());
-                if(jsonContent==null){
+                if (jsonContent == null) {
                     return ResponseResult.failResponse("无效的URL或URL内容无法解析！");
                 }
                 // 处理JSON内容或调用fileService.uploadFile方法
@@ -162,7 +162,7 @@ public class TestGroupFileController {
      * @param bindingResult      参数校验
      * @return 响应信息
      */
-    @PutMapping(value = "/updateFile" ,consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/updateFile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseResult<String> updateFile(@ModelAttribute @Validated TestGroupFileDTO testGroupFileIdDTO, BindingResult bindingResult) throws Exception {
         if (testGroupFileIdDTO.getFileId() == null) {
             return ResponseResult.failResponse("fileId不能为空");
@@ -185,7 +185,7 @@ public class TestGroupFileController {
         try {
             testGroupFileService.deleteFile(fileId);
         } catch (IOException e) {
-            log.warn("删除测试集出问题:{}",e.getMessage());
+            log.warn("删除测试集出问题:{}", e.getMessage());
             return ResponseResult.failResponse("删除文件出错，文件可能不存在或fileId出错");
         }
         return ResponseResult.successResponse("删除成功");

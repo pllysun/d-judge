@@ -1,8 +1,6 @@
 package com.dong.djudge.enums;
 
-import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 public enum UpLoadFileEnum {

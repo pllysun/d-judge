@@ -1,9 +1,8 @@
 package com.dong.djudge.util;
 
-import cn.hutool.json.JSONUtil;
-import org.springframework.util.ObjectUtils;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * @Author: Himit_ZH

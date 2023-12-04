@@ -1,8 +1,6 @@
 package com.dong.djudge.service;
 
 import com.dong.djudge.dto.StaredCodeDTO;
-import com.dong.djudge.exception.CompileException;
-import com.dong.djudge.exception.SystemException;
 import com.dong.djudge.util.ResponseResult;
 
 /**

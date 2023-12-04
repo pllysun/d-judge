@@ -1,8 +1,5 @@
 package com.dong.djudge.controller;
 
-import cn.hutool.json.JSONArray;
-import com.dong.djudge.exception.CompileException;
-import com.dong.djudge.exception.SystemException;
 import com.dong.djudge.dto.JudgeRequest;
 import com.dong.djudge.enums.ModeEnum;
 import com.dong.djudge.service.JudgeService;
@@ -13,8 +10,6 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Objects;
 
 /**
  * 判题服务类
@@ -42,8 +37,6 @@ public class JudgeController {
     private JudgeService codeJudgeService;
 
 
-
-
     /**
      * 判题服务类
      *
@@ -59,7 +52,7 @@ public class JudgeController {
         }
         // result为判题结果
         ModeEnum typeByName = ModeEnum.getTypeByName(request.getModeType());
-        if(typeByName== null){
+        if (typeByName == null) {
             return ResponseResult.failResponse("未知modeType类型");
         }
         Integer code = typeByName.getCode();

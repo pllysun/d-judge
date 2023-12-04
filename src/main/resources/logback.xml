@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <property name="LOG_PATH" value="logs" />
-    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] %-40.40logger{39}[%file:%line] : %msg%n" />
+    <property name="LOG_PATH" value="logs"/>
+    <property name="LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] %-40.40logger{39}[%file:%line] : %msg%n"/>
     <!-- 控制台输出 -->
     <appender name="consoleLog" class="ch.qos.logback.core.ConsoleAppender">
         <!-- 彩色日志 -->
@@ -11,7 +12,7 @@
     </appender>
 
     <!-- 按照每天生成日志文件 -->
-    <appender name="infoLog"  class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="infoLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!--日志文件输出的文件名-->
             <FileNamePattern>${LOG_PATH}/info/D-Judge(%d{yyyy-MM-dd}.%i).log</FileNamePattern>
@@ -32,7 +33,7 @@
         </filter>
     </appender>
 
-    <appender name="warnLog"  class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="warnLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!--日志文件输出的文件名-->
             <FileNamePattern>${LOG_PATH}/warn/D-Judge(%d{yyyy-MM-dd}.%i).log</FileNamePattern>
@@ -53,7 +54,7 @@
         </filter>
     </appender>
 
-    <appender name="errorLog"  class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="errorLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!--日志文件输出的文件名-->
             <FileNamePattern>${LOG_PATH}/error/D-Judge(%d{yyyy-MM-dd}.%i).log</FileNamePattern>
@@ -76,10 +77,10 @@
 
     <!-- 日志输出级别 -->
     <root level="info">
-        <appender-ref ref="consoleLog" />
-        <appender-ref ref="infoLog" />
-        <appender-ref ref="warnLog" />
-        <appender-ref ref="errorLog" />
+        <appender-ref ref="consoleLog"/>
+        <appender-ref ref="infoLog"/>
+        <appender-ref ref="warnLog"/>
+        <appender-ref ref="errorLog"/>
     </root>
 
 </configuration>

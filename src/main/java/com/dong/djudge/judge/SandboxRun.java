@@ -8,7 +8,11 @@ import com.dong.djudge.util.Constants;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestClientResponseException;
@@ -20,56 +24,10 @@ import java.util.List;
 import java.util.Map;
 
 
-
 @Slf4j(topic = "hoj")
 public class SandboxRun {
 
-    @Getter
-    private static final RestTemplate restTemplate;
-
-    // 单例模式
-    private static final SandboxRun instance = new SandboxRun();
-
-    private static final String SANDBOX_BASE_URL = "http://8.219.11.202:5050";
-
     public static final HashMap<String, Integer> RESULT_MAP_STATUS = new HashMap<>();
-
-    private static final int maxProcessNumber = 128;
-
-    private static final int TIME_LIMIT_MS = 16000;
-
-    private static final int MEMORY_LIMIT_MB = 512;
-
-    private static final int STACK_LIMIT_MB = 128;
-
-    private static final int STDIO_SIZE_MB = 32;
-
-     public SandboxRun() {
-
-    }
-
-    static {
-        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(20000);
-        requestFactory.setReadTimeout(180000);
-        restTemplate = new RestTemplate(requestFactory);
-    }
-
-    static {
-        RESULT_MAP_STATUS.put("Time Limit Exceeded", Constants.Judge.STATUS_TIME_LIMIT_EXCEEDED.getStatus());
-        RESULT_MAP_STATUS.put("Memory Limit Exceeded", Constants.Judge.STATUS_MEMORY_LIMIT_EXCEEDED.getStatus());
-        RESULT_MAP_STATUS.put("Output Limit Exceeded", Constants.Judge.STATUS_RUNTIME_ERROR.getStatus());
-        RESULT_MAP_STATUS.put("Accepted", Constants.Judge.STATUS_ACCEPTED.getStatus());
-        RESULT_MAP_STATUS.put("Nonzero Exit Status", Constants.Judge.STATUS_RUNTIME_ERROR.getStatus());
-        RESULT_MAP_STATUS.put("Internal Error", Constants.Judge.STATUS_SYSTEM_ERROR.getStatus());
-        RESULT_MAP_STATUS.put("File Error", Constants.Judge.STATUS_SYSTEM_ERROR.getStatus());
-        RESULT_MAP_STATUS.put("Signalled", Constants.Judge.STATUS_RUNTIME_ERROR.getStatus());
-    }
-
-    public static String getSandboxBaseUrl() {
-        return SANDBOX_BASE_URL;
-    }
-
     public static final List<String> SIGNALS = Arrays.asList(
             "", // 0
             "Hangup", // 1
@@ -104,50 +62,16 @@ public class SandboxRun {
             "Power failure", // 30
             "Bad system call" // 31
     );
-
-    public JSONArray run(String uri, JSONObject param) throws SystemException {
-        // 创建HttpHeaders对象并设置Content-Type为JSON
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        // 创建HttpEntity对象，将参数param转换为JSON字符串，并将设置的Headers添加到请求中
-        HttpEntity<String> request = new HttpEntity<>(JSONUtil.toJsonStr(param), headers);
-        log.info(request.toString());
-        ResponseEntity<String> postForEntity;
-        try {
-            // 使用RestTemplate发送POST请求，将响应结果保存在postForEntity中
-            postForEntity = restTemplate.postForEntity(SANDBOX_BASE_URL + uri, request, String.class);
-
-            // 解析响应体中的JSON数组并返回
-            return JSONUtil.parseArray(postForEntity.getBody());
-        } catch (RestClientResponseException ex) {
-            // 处理RestClientResponseException异常，通常表示HTTP请求出现问题
-            if (ex.getStatusCode() != HttpStatusCode.valueOf(200)) {
-                // 如果HTTP状态码不是200，抛出自定义的SystemError异常
-                throw new SystemException("Cannot connect to sandbox service.", null, ex.getResponseBodyAsString());
-            }
-        } catch (Exception e) {
-            // 处理其他异常情况
-            throw new SystemException("Call SandBox Error.", null, e.getMessage());
-        }
-
-        // 如果没有异常抛出，返回null
-        return null;
-    }
-
-
-    public static void delFile(String fileId) {
-
-        try {
-            restTemplate.delete(SANDBOX_BASE_URL + "/file/{0}", fileId);
-        } catch (RestClientResponseException ex) {
-            if (ex.getStatusCode() != HttpStatusCode.valueOf(200)) {
-                log.error("安全沙箱判题的删除内存中的文件缓存操作异常----------------->{}", ex.getResponseBodyAsString());
-            }
-        }
-
-    }
-
+    @Getter
+    private static final RestTemplate restTemplate;
+    // 单例模式
+    private static final SandboxRun instance = new SandboxRun();
+    private static final String SANDBOX_BASE_URL = "http://8.219.11.202:5050";
+    private static final int maxProcessNumber = 128;
+    private static final int TIME_LIMIT_MS = 16000;
+    private static final int MEMORY_LIMIT_MB = 512;
+    private static final int STACK_LIMIT_MB = 128;
+    private static final int STDIO_SIZE_MB = 32;
     /**
      * "files": [{
      * "content": ""
@@ -160,6 +84,24 @@ public class SandboxRun {
      * }]
      */
     private static final JSONArray COMPILE_FILES = new JSONArray();
+
+    static {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(20000);
+        requestFactory.setReadTimeout(180000);
+        restTemplate = new RestTemplate(requestFactory);
+    }
+
+    static {
+        RESULT_MAP_STATUS.put("Time Limit Exceeded", Constants.Judge.STATUS_TIME_LIMIT_EXCEEDED.getStatus());
+        RESULT_MAP_STATUS.put("Memory Limit Exceeded", Constants.Judge.STATUS_MEMORY_LIMIT_EXCEEDED.getStatus());
+        RESULT_MAP_STATUS.put("Output Limit Exceeded", Constants.Judge.STATUS_RUNTIME_ERROR.getStatus());
+        RESULT_MAP_STATUS.put("Accepted", Constants.Judge.STATUS_ACCEPTED.getStatus());
+        RESULT_MAP_STATUS.put("Nonzero Exit Status", Constants.Judge.STATUS_RUNTIME_ERROR.getStatus());
+        RESULT_MAP_STATUS.put("Internal Error", Constants.Judge.STATUS_SYSTEM_ERROR.getStatus());
+        RESULT_MAP_STATUS.put("File Error", Constants.Judge.STATUS_SYSTEM_ERROR.getStatus());
+        RESULT_MAP_STATUS.put("Signalled", Constants.Judge.STATUS_RUNTIME_ERROR.getStatus());
+    }
 
     static {
         JSONObject content = new JSONObject();
@@ -175,6 +117,26 @@ public class SandboxRun {
         COMPILE_FILES.put(content);
         COMPILE_FILES.put(stdout);
         COMPILE_FILES.put(stderr);
+    }
+
+    public SandboxRun() {
+
+    }
+
+    public static String getSandboxBaseUrl() {
+        return SANDBOX_BASE_URL;
+    }
+
+    public static void delFile(String fileId) {
+
+        try {
+            restTemplate.delete(SANDBOX_BASE_URL + "/file/{0}", fileId);
+        } catch (RestClientResponseException ex) {
+            if (ex.getStatusCode() != HttpStatusCode.valueOf(200)) {
+                log.error("安全沙箱判题的删除内存中的文件缓存操作异常----------------->{}", ex.getResponseBodyAsString());
+            }
+        }
+
     }
 
     /**
@@ -258,17 +220,16 @@ public class SandboxRun {
         return result;
     }
 
-
     /**
-     * @param args            普通评测运行cmd的命令参数
-     * @param envs            普通评测运行的环境变量
-     * @param maxTime         评测的最大限制时间 ms
-     * @param maxOutputSize   评测的最大输出大小 kb
-     * @param maxStack        评测的最大限制栈空间 mb
-     * @param exeName         评测的用户程序名称
-     * @param fileId          评测的用户程序文件id
-     * @param fileContent     评测的用户程序文件内容，如果userFileId存在则为null
-     * @param isFileIO        是否为文件IO
+     * @param args          普通评测运行cmd的命令参数
+     * @param envs          普通评测运行的环境变量
+     * @param maxTime       评测的最大限制时间 ms
+     * @param maxOutputSize 评测的最大输出大小 kb
+     * @param maxStack      评测的最大限制栈空间 mb
+     * @param exeName       评测的用户程序名称
+     * @param fileId        评测的用户程序文件id
+     * @param fileContent   评测的用户程序文件内容，如果userFileId存在则为null
+     * @param isFileIO      是否为文件IO
      * @MethodName testCase
      * @Description 普通评测
      * @Return JSONArray
@@ -284,7 +245,7 @@ public class SandboxRun {
                                      String fileId,
                                      String fileContent,
                                      Boolean isFileIO
-                                     ) throws SystemException {
+    ) throws SystemException {
 
         JSONObject cmd = new JSONObject();
         cmd.set("args", args);
@@ -343,7 +304,6 @@ public class SandboxRun {
         testcaseRes.set("status", RESULT_MAP_STATUS.get(testcaseRes.getStr("status")));
         return result;
     }
-
 
     /**
      * @param args                   特殊判题的运行cmd命令参数
@@ -437,7 +397,6 @@ public class SandboxRun {
         spjRes.set("status", RESULT_MAP_STATUS.get(spjRes.getStr("status")));
         return result;
     }
-
 
     /**
      * @param args                   cmd的命令参数 评测运行的命令
@@ -626,6 +585,36 @@ public class SandboxRun {
         interactiveRes.set("originalStatus", interactiveRes.getStr("status"));
         interactiveRes.set("status", RESULT_MAP_STATUS.get(interactiveRes.getStr("status")));
         return result;
+    }
+
+    public JSONArray run(String uri, JSONObject param) throws SystemException {
+        // 创建HttpHeaders对象并设置Content-Type为JSON
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // 创建HttpEntity对象，将参数param转换为JSON字符串，并将设置的Headers添加到请求中
+        HttpEntity<String> request = new HttpEntity<>(JSONUtil.toJsonStr(param), headers);
+        log.info(request.toString());
+        ResponseEntity<String> postForEntity;
+        try {
+            // 使用RestTemplate发送POST请求，将响应结果保存在postForEntity中
+            postForEntity = restTemplate.postForEntity(SANDBOX_BASE_URL + uri, request, String.class);
+
+            // 解析响应体中的JSON数组并返回
+            return JSONUtil.parseArray(postForEntity.getBody());
+        } catch (RestClientResponseException ex) {
+            // 处理RestClientResponseException异常，通常表示HTTP请求出现问题
+            if (ex.getStatusCode() != HttpStatusCode.valueOf(200)) {
+                // 如果HTTP状态码不是200，抛出自定义的SystemError异常
+                throw new SystemException("Cannot connect to sandbox service.", null, ex.getResponseBodyAsString());
+            }
+        } catch (Exception e) {
+            // 处理其他异常情况
+            throw new SystemException("Call SandBox Error.", null, e.getMessage());
+        }
+
+        // 如果没有异常抛出，返回null
+        return null;
     }
 
 }

@@ -1,5 +1,3 @@
-
-
 package com.dong.djudge.util;
 
 
@@ -46,13 +44,12 @@ public class ResponseResult<T> implements Serializable {
     }
 
     public static <T> ResponseResult<T> ok(T data) {
-        return new ResponseResult<>(ResultStatus.SUCCESS.getCode(),"成功",data);
+        return new ResponseResult<>(ResultStatus.SUCCESS.getCode(), "成功", data);
     }
 
     public static <T> ResponseResult<T> successResponse(String msg) {
         return new ResponseResult<T>(ResultStatus.SUCCESS.getCode(), msg, null);
     }
-
 
 
     public static <T> ResponseResult<T> failResponse(String msg) {

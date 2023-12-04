@@ -4,7 +4,6 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -38,7 +37,6 @@ public class SqliteConfig {
         return "CREATE TABLE IF NOT EXISTS test_group (" +
                 "    id BIGINT PRIMARY KEY," +
                 "    test_group_id CHAR(12) UNIQUE," +
-                "    test_group_path VARCHAR(512)," +
                 "    create_time TIMESTAMP DEFAULT (strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime'))," +
                 "    update_time TIMESTAMP DEFAULT (strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime'))" +
                 ");";
@@ -59,7 +57,6 @@ public class SqliteConfig {
                     id BIGINT PRIMARY KEY,
                     code_id VARCHAR(12) NOT NULL,
                     test_group_id VARCHAR(12) NOT NULL,
-                    code_path VARCHAR(512) NOT NULL,
                     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE (code_id)
