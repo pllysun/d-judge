@@ -4,12 +4,12 @@ import com.dong.djudge.dto.TestGroupFileDTO;
 import com.dong.djudge.enums.UpLoadFileEnum;
 import com.dong.djudge.service.TestGroupFileService;
 import com.dong.djudge.util.CommonUtils;
-import com.dong.djudge.util.JsonUtils;
 import com.dong.djudge.util.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
@@ -79,7 +79,7 @@ public class TestGroupFileController {
         switch (code) {
             case 0:
                 // 检查 JSON 是否有效
-                if (JsonUtils.isValidJson(testGroupFileDTO.getContent())) {
+                if (CommonUtils.isValidJson(testGroupFileDTO.getContent())) {
                     return ResponseResult.failResponse("无效的 JSON 内容！");
                 }
                 if (isUpload) {
@@ -118,7 +118,7 @@ public class TestGroupFileController {
                         return ResponseResult.failResponse("文件类型不是 JSON，请检查您的文件格式！");
                     }
                     String json = new String(testGroupFileDTO.getFile().getBytes());
-                    if (JsonUtils.isValidJson(json)) {
+                    if (CommonUtils.isValidJson(json)) {
                         return ResponseResult.failResponse("无效的 JSON 内容！");
                     }
                     if (isUpload) {
@@ -147,12 +147,14 @@ public class TestGroupFileController {
      * @return json文件
      */
     @GetMapping(value = "/downLoadFile")
-    public ResponseResult<String> getFile(String fileId) {
-        if (fileId == null || fileId.isBlank()) {
-            return ResponseResult.failResponse("fileId参数不能为空");
+    public ResponseEntity<Object> getFile(String fileId) throws Exception {
+        String jsonContent = testGroupFileService.getFile(fileId);
+        if (jsonContent == null || jsonContent.isBlank()) {
+            return ResponseEntity
+                    .status(404)
+                    .body(null);
         }
-        String Json = testGroupFileService.getFile(fileId);
-        return new ResponseResult<>(200, "获取成功", Json);
+        return CommonUtils.getObjectResponseEntity(fileId, jsonContent);
     }
 
     /**

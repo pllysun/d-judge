@@ -5,7 +5,7 @@ public interface TestGroupFileService {
 
     void deleteFile(String fileId) throws Exception;
 
-    String getFile(String fileId);
+    String getFile(String fileId) throws Exception;
 
     void updateFile(String fileId, String value) throws Exception;
 

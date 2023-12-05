@@ -10,6 +10,12 @@ import java.util.List;
  */
 @Data
 public class TestCaseGroupRoot {
+    /**
+     * 测试组群ID
+     */
     private int gid;
+    /**
+     * 测试组内容
+     */
     private List<TestCaseGroup> input;
 }

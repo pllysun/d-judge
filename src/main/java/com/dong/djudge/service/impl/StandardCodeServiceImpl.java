@@ -6,7 +6,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dong.djudge.dto.JudgeRequest;
-import com.dong.djudge.dto.StaredCodeDTO;
+import com.dong.djudge.dto.standardCodeDTO;
+import com.dong.djudge.dto.UpdatestandardCodeDTO;
 import com.dong.djudge.entity.StandardCodeEntity;
 import com.dong.djudge.entity.TestCaseGroup;
 import com.dong.djudge.entity.TestCaseGroupRoot;
@@ -45,43 +46,99 @@ public class StandardCodeServiceImpl extends ServiceImpl<StandardCodeMapper, Sta
     TestGroupMapper testGroupMapper;
     @Autowired
     private CompileService compileService;
+    RunResultRoot runResultRoot;
 
-    private static JudgeRequest getJudgeRequest(StaredCodeDTO staredCodeDTO) {
+    private static JudgeRequest getJudgeRequest(standardCodeDTO standardCodeDTO) {
         JudgeRequest judgeRequest = new JudgeRequest();
         StandardCode standardCode = new StandardCode();
         standardCode.setRunCodeType(CodeRunTypeEnum.BEFORE.getValue());
-        standardCode.setRunCodeLanguage(staredCodeDTO.getLanguage());
-        standardCode.setRunCode(staredCodeDTO.getCode());
+        standardCode.setRunCodeLanguage(standardCodeDTO.getLanguage());
+        standardCode.setRunCode(standardCodeDTO.getCode());
         standardCode.setInputFileType(InputFileEnum.FILE.getValue());
-        standardCode.setInputFileContext(staredCodeDTO.getTestGroupId());
+        standardCode.setInputFileContext(standardCodeDTO.getTestGroupId());
         judgeRequest.setStandardCode(standardCode);
-        judgeRequest.setLanguage(staredCodeDTO.getLanguage());
-        judgeRequest.setCode(staredCodeDTO.getCode());
+        judgeRequest.setLanguage(standardCodeDTO.getLanguage());
+        judgeRequest.setCode(standardCodeDTO.getCode());
         judgeRequest.setModeType(ModeEnum.OJ.getName());
         return judgeRequest;
     }
 
+    /**
+     * 根据提供的 standardCodeDTO 执行标准代码运行。
+     * 初始化代码执行，获取测试用例组根，返回执行结果。
+     *
+     * @param standardCodeDTO 包含代码执行信息的 standardCodeDTO。
+     * @return 包含标准代码运行结果的 ResponseResult。
+     * @throws Exception 如果在代码执行过程中发生错误。
+     */
     @Override
-    public ResponseResult<String> standardCodeRun(StaredCodeDTO staredCodeDTO) throws Exception {
-        LambdaQueryWrapper<TestGroupEntity> testGroupEntityLambdaQueryWrapper = new QueryWrapper<TestGroupEntity>().lambda();
-        testGroupEntityLambdaQueryWrapper.eq(TestGroupEntity::getTestGroupId, staredCodeDTO.getTestGroupId());
-        TestGroupEntity testGroupEntity = testGroupMapper.selectOne(testGroupEntityLambdaQueryWrapper);
-        if (testGroupEntity == null) {
-            return ResponseResult.failResponse(staredCodeDTO.getTestGroupId() + "不存在！");
+    public ResponseResult<String> standardCodeRun(standardCodeDTO standardCodeDTO) throws Exception {
+        // 初始化代码执行
+        ResponseResult<String> init = init(standardCodeDTO);
+        if (init != null) {
+            return init;
         }
-        JudgeRequest judgeRequest = getJudgeRequest(staredCodeDTO);
-        if (!CommonUtils.isFileExist(staredCodeDTO.getTestGroupId())) {
-            return ResponseResult.failResponse("该测试集文件不存在");
+        // 获取测试用例组根
+        List<TestCaseGroupRoot> list = getTestCaseGroupRoots();
+        // 返回带有代码 ID 的结果
+        return getCodeId(standardCodeDTO, list);
+    }
+
+    @Override
+    public ResponseResult<String> standardCode(UpdatestandardCodeDTO updatestandardCodeDTO) throws Exception {
+        standardCodeDTO standardCodeDTO = new standardCodeDTO(updatestandardCodeDTO);
+        ResponseResult<String> init = init(standardCodeDTO);
+        if (init != null) {
+            return init;
         }
-        String fileId = compileService.compile(judgeRequest);
-        RunResultRoot runResultRoot = runTask.runTask(judgeRequest, fileId);
-        if (runResultRoot == null) {
-            return ResponseResult.failResponse("执行出错");
+        // 获取测试用例组根
+        List<TestCaseGroupRoot> list = getTestCaseGroupRoots();
+        // 将测试用例组根转换为 JSON 字符串
+        String json = JSON.toJSONString(list);
+
+        // 生成带有前缀的唯一代码ID
+        String jsonFileId = updatestandardCodeDTO.getStandardCodeId();
+
+        // 将 JSON 写入带有生成的代码ID的文件中
+        CommonUtils.writeFile(jsonFileId, json);
+
+        // 在数据库中插入记录，包括生成的代码ID和测试组ID
+        StandardCodeEntity standardCodeEntity = new StandardCodeEntity();
+        standardCodeEntity.setTestGroupId(standardCodeDTO.getTestGroupId());
+        LambdaQueryWrapper<StandardCodeEntity> lambda = new QueryWrapper<StandardCodeEntity>().lambda();
+        lambda.eq(StandardCodeEntity::getCodeId, jsonFileId);
+        standardCodeMapper.update(standardCodeEntity, lambda);
+
+        // 返回带有生成的代码ID的 ResponseResult
+        return ResponseResult.ok(jsonFileId);
+    }
+
+    @Override
+    public String getStandardCode(String standardCodeId) throws Exception {
+        return CommonUtils.readFile(standardCodeId);
+    }
+
+    @Override
+    public ResponseResult<String> deleteStandardCode(String standardCodeId) {
+        LambdaQueryWrapper<StandardCodeEntity> lambda = new QueryWrapper<StandardCodeEntity>().lambda();
+        lambda.eq(StandardCodeEntity::getCodeId, standardCodeId);
+        try {
+            standardCodeMapper.delete(lambda);
+            CommonUtils.deleteLocalFile(standardCodeId);
+        } catch (Exception e) {
+            return ResponseResult.failResponse("删除失败", e.getMessage());
         }
-        if (runResultRoot.getState() != null && !"Accepted".equals(runResultRoot.getState())) {
-            return ResponseResult.failResponse(runResultRoot.getState());
-        }
+        return ResponseResult.successResponse("删除成功");
+    }
+
+    /**
+     * 获取并返回基于 runResultRoot 的 TestCaseGroupRoot 列表。
+     *
+     * @return 表示测试用例组的 TestCaseGroupRoot 列表。
+     */
+    private List<TestCaseGroupRoot> getTestCaseGroupRoots() {
         List<TestCaseGroupRoot> list = new ArrayList<>();
+        // 遍历 runResultRoot 提取测试用例组信息
         for (Integer i : runResultRoot.getRunResult().keySet()) {
             TestCaseGroupRoot testCaseGroupRoot = new TestCaseGroupRoot();
             Map<Integer, RunResult> integerRunResultMap = runResultRoot.getRunResult().get(i);
@@ -90,6 +147,7 @@ public class StandardCodeServiceImpl extends ServiceImpl<StandardCodeMapper, Sta
                 RunResult runResult = integerRunResultMap.get(j);
                 testCaseGroup.setId(j);
                 testCaseGroup.setValue(runResult.getFiles().getStdout());
+                // 将 testCaseGroup 添加到 testCaseGroupRoot 的输入列表中
                 if (testCaseGroupRoot.getInput() == null) {
                     testCaseGroupRoot.setInput(new ArrayList<>());
                 }
@@ -97,13 +155,85 @@ public class StandardCodeServiceImpl extends ServiceImpl<StandardCodeMapper, Sta
             }
             list.add(testCaseGroupRoot);
         }
+        return list;
+    }
+
+    /**
+     * 通过验证测试组、编译代码并运行任务初始化代码执行。
+     * 如果出现问题，返回带有错误消息的 ResponseResult。
+     *
+     * @param standardCodeDTO 包含代码执行信息的 standardCodeDTO。
+     * @return 如果出现问题，带有错误消息的 ResponseResult；否则返回 null。
+     * @throws Exception 如果在代码初始化过程中发生错误。
+     */
+    private ResponseResult<String> init(standardCodeDTO standardCodeDTO) throws Exception {
+        // 根据测试组ID查询测试组实体
+        LambdaQueryWrapper<TestGroupEntity> testGroupEntityLambdaQueryWrapper =
+                new QueryWrapper<TestGroupEntity>().lambda();
+        testGroupEntityLambdaQueryWrapper.eq(TestGroupEntity::getTestGroupId, standardCodeDTO.getTestGroupId());
+        TestGroupEntity testGroupEntity = testGroupMapper.selectOne(testGroupEntityLambdaQueryWrapper);
+
+        // 检查测试组实体是否存在
+        if (testGroupEntity == null) {
+            return ResponseResult.failResponse(standardCodeDTO.getTestGroupId() + "不存在！");
+        }
+
+        // 获取用于代码执行的 JudgeRequest
+        JudgeRequest judgeRequest = getJudgeRequest(standardCodeDTO);
+
+        // 检查测试组文件是否存在
+        if (!CommonUtils.isFileExist(standardCodeDTO.getTestGroupId())) {
+            return ResponseResult.failResponse("该测试集文件不存在");
+        }
+
+        // 编译代码并获取文件ID
+        String fileId = compileService.compile(judgeRequest);
+
+        // 运行任务并获取运行结果
+        runResultRoot = runTask.runTask(judgeRequest, fileId);
+
+        // 检查代码执行过程中是否有错误
+        if (runResultRoot == null) {
+            return ResponseResult.failResponse("执行出错");
+        }
+
+        // 检查执行状态，如果不是 "Accepted" 则返回错误响应
+        if (runResultRoot.getState() != null && !"Accepted".equals(runResultRoot.getState())) {
+            return ResponseResult.failResponse(runResultRoot.getState());
+        }
+
+        // 如果初始化成功则返回 null
+        return null;
+    }
+
+    /**
+     * 生成唯一的代码ID，将测试用例组根写入文件，并插入数据库记录。
+     * 返回带有生成的代码ID的 ResponseResult。
+     *
+     * @param standardCodeDTO 包含代码执行信息的 standardCodeDTO。
+     * @param list          表示测试用例组的 TestCaseGroupRoot 列表。
+     * @return 带有生成的代码ID的 ResponseResult。
+     * @throws Exception 如果在代码执行过程中发生错误。
+     */
+    private ResponseResult<String> getCodeId(standardCodeDTO standardCodeDTO, List<TestCaseGroupRoot> list) throws Exception {
+        // 将测试用例组根转换为 JSON 字符串
         String json = JSON.toJSONString(list);
+
+        // 生成带有前缀的唯一代码ID
         String jsonFileId = CommonUtils.generateRandomUpperCaseWithPrefix("SC-", 12);
+
+        // 将 JSON 写入带有生成的代码ID的文件中
         CommonUtils.writeFile(jsonFileId, json);
+
+        // 在数据库中插入记录，包括生成的代码ID和测试组ID
         StandardCodeEntity standardCodeEntity = new StandardCodeEntity();
         standardCodeEntity.setCodeId(jsonFileId);
-        standardCodeEntity.setTestGroupId(staredCodeDTO.getTestGroupId());
+        standardCodeEntity.setTestGroupId(standardCodeDTO.getTestGroupId());
         standardCodeMapper.insert(standardCodeEntity);
+
+        // 返回带有生成的代码ID的 ResponseResult
         return ResponseResult.ok(jsonFileId);
     }
+
+
 }

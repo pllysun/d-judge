@@ -51,8 +51,8 @@ public class TestGroupFileServiceImpl implements TestGroupFileService {
     }
 
     @Override
-    public String getFile(String fileId) {
-        return null;
+    public String getFile(String fileId) throws Exception {
+        return CommonUtils.readFile(fileId);
     }
 
     @Override

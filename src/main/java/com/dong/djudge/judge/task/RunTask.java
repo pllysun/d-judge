@@ -19,7 +19,6 @@ import com.dong.djudge.judge.entity.LanguageConfig;
 import com.dong.djudge.judge.service.RunService;
 import com.dong.djudge.mapper.TestGroupMapper;
 import com.dong.djudge.util.CommonUtils;
-import com.dong.djudge.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -57,7 +56,7 @@ public class RunTask {
         } else {
 
             if (request.getStandardCode().getInputFileType().equals(InputFileEnum.JSON.getValue())) {
-                if (!JsonUtils.isValidJson(request.getStandardCode().getInputFileContext())) {
+                if (!CommonUtils.isValidJson(request.getStandardCode().getInputFileContext())) {
                     return null;
                 }
                 runResultRoot = getRunResultList(request, fileId, languageConfigByName);
@@ -89,7 +88,7 @@ public class RunTask {
         RunResultRoot runResultRoot = new RunResultRoot();
         try (ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor()) {
             List<Future<RunResultForTestGroup>> futures = new ArrayList<>();
-            for (TestCaseGroupRoot testCaseGroupRoot : JsonUtils.getTestCaseGroupList(request.getStandardCode().getInputFileContext())) {
+            for (TestCaseGroupRoot testCaseGroupRoot : CommonUtils.getTestCaseGroupList(request.getStandardCode().getInputFileContext())) {
                 Integer gid=testCaseGroupRoot.getGid();
                 for (TestCaseGroup testCaseGroup : testCaseGroupRoot.getInput()) {
                     Integer id=testCaseGroup.getId();

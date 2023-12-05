@@ -10,6 +10,12 @@ import java.util.List;
  */
 @Data
 public class TestCaseGroup {
+    /**
+     * 测试ID
+     */
     private int id;
+    /**
+     * 测试输入值
+     */
     private String value;
 }
