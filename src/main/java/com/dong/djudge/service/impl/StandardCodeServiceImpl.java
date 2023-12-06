@@ -79,7 +79,7 @@ public class StandardCodeServiceImpl extends ServiceImpl<StandardCodeMapper, Sta
             return init;
         }
         // 获取测试用例组根
-        List<TestCaseGroupRoot> list = getTestCaseGroupRoots();
+        List<TestCaseGroupRoot> list = CommonUtils.getTestCaseGroupRoots(runResultRoot);
         // 返回带有代码 ID 的结果
         return getCodeId(standardCodeDTO, list);
     }
@@ -92,7 +92,7 @@ public class StandardCodeServiceImpl extends ServiceImpl<StandardCodeMapper, Sta
             return init;
         }
         // 获取测试用例组根
-        List<TestCaseGroupRoot> list = getTestCaseGroupRoots();
+        List<TestCaseGroupRoot> list = CommonUtils.getTestCaseGroupRoots(runResultRoot);
         // 将测试用例组根转换为 JSON 字符串
         String json = JSON.toJSONString(list);
 
@@ -131,32 +131,7 @@ public class StandardCodeServiceImpl extends ServiceImpl<StandardCodeMapper, Sta
         return ResponseResult.successResponse("删除成功");
     }
 
-    /**
-     * 获取并返回基于 runResultRoot 的 TestCaseGroupRoot 列表。
-     *
-     * @return 表示测试用例组的 TestCaseGroupRoot 列表。
-     */
-    private List<TestCaseGroupRoot> getTestCaseGroupRoots() {
-        List<TestCaseGroupRoot> list = new ArrayList<>();
-        // 遍历 runResultRoot 提取测试用例组信息
-        for (Integer i : runResultRoot.getRunResult().keySet()) {
-            TestCaseGroupRoot testCaseGroupRoot = new TestCaseGroupRoot();
-            Map<Integer, RunResult> integerRunResultMap = runResultRoot.getRunResult().get(i);
-            for (Integer j : integerRunResultMap.keySet()) {
-                TestCaseGroup testCaseGroup = new TestCaseGroup();
-                RunResult runResult = integerRunResultMap.get(j);
-                testCaseGroup.setId(j);
-                testCaseGroup.setValue(runResult.getFiles().getStdout());
-                // 将 testCaseGroup 添加到 testCaseGroupRoot 的输入列表中
-                if (testCaseGroupRoot.getInput() == null) {
-                    testCaseGroupRoot.setInput(new ArrayList<>());
-                }
-                testCaseGroupRoot.getInput().add(testCaseGroup);
-            }
-            list.add(testCaseGroupRoot);
-        }
-        return list;
-    }
+
 
     /**
      * 通过验证测试组、编译代码并运行任务初始化代码执行。

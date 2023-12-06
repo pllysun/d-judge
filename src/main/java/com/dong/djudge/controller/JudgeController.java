@@ -60,7 +60,7 @@ public class JudgeController {
             case 0:
                 return oiJudge(request);
             case 1:
-                break;
+                return ojJudgeService.Judge(request);
             case 2:
                 break;
             case 3:
@@ -79,4 +79,5 @@ public class JudgeController {
     private ResponseResult<Object> oiJudge(JudgeRequest request) throws Exception {
         return oiJudgeService.Judge(request);
     }
+
 }

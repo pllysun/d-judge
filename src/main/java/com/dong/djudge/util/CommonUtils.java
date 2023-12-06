@@ -6,6 +6,8 @@ import cn.hutool.core.lang.UUID;
 import com.alibaba.fastjson2.JSON;
 import com.dong.djudge.entity.TestCaseGroup;
 import com.dong.djudge.entity.TestCaseGroupRoot;
+import com.dong.djudge.entity.judge.RunResult;
+import com.dong.djudge.entity.judge.RunResultRoot;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -28,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -421,6 +424,45 @@ public class CommonUtils {
                     .status(500)
                     .body(null);
         }
+    }
+
+    public static Map<Integer,Map<Integer, TestCaseGroup>> getTestCaseGroupMapByList(List<TestCaseGroupRoot> testCaseGroupRootList){
+        Map<Integer,Map<Integer, TestCaseGroup>> testCaseGroupRootMap = new HashMap<>();
+        for (TestCaseGroupRoot testCaseGroupRoot : testCaseGroupRootList) {
+            Map<Integer, TestCaseGroup> orDefault = testCaseGroupRootMap.getOrDefault(testCaseGroupRoot.getGid(), new HashMap<>());
+            for (TestCaseGroup testCaseGroup : testCaseGroupRoot.getInput()) {
+                orDefault.put(testCaseGroup.getId(),testCaseGroup);
+            }
+            testCaseGroupRootMap.put(testCaseGroupRoot.getGid(),orDefault);
+        }
+        return testCaseGroupRootMap;
+    }
+
+    /**
+     * 获取并返回基于 runResultRoot 的 TestCaseGroupRoot 列表。
+     *
+     * @return 表示测试用例组的 TestCaseGroupRoot 列表。
+     */
+    public static List<TestCaseGroupRoot> getTestCaseGroupRoots(RunResultRoot runResultRoot) {
+        List<TestCaseGroupRoot> list = new ArrayList<>();
+        // 遍历 runResultRoot 提取测试用例组信息
+        for (Integer i : runResultRoot.getRunResult().keySet()) {
+            TestCaseGroupRoot testCaseGroupRoot = new TestCaseGroupRoot();
+            Map<Integer, RunResult> integerRunResultMap = runResultRoot.getRunResult().get(i);
+            for (Integer j : integerRunResultMap.keySet()) {
+                TestCaseGroup testCaseGroup = new TestCaseGroup();
+                RunResult runResult = integerRunResultMap.get(j);
+                testCaseGroup.setId(j);
+                testCaseGroup.setValue(runResult.getFiles().getStdout());
+                // 将 testCaseGroup 添加到 testCaseGroupRoot 的输入列表中
+                if (testCaseGroupRoot.getInput() == null) {
+                    testCaseGroupRoot.setInput(new ArrayList<>());
+                }
+                testCaseGroupRoot.getInput().add(testCaseGroup);
+            }
+            list.add(testCaseGroupRoot);
+        }
+        return list;
     }
 
 }
