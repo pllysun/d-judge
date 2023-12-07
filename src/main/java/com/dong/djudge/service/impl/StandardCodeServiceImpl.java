@@ -8,11 +8,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dong.djudge.dto.JudgeRequest;
 import com.dong.djudge.dto.standardCodeDTO;
 import com.dong.djudge.dto.UpdatestandardCodeDTO;
+import com.dong.djudge.entity.InCaseGroupRoot;
+import com.dong.djudge.entity.SaveCaseGroupRoot;
+import com.dong.djudge.entity.SaveTestCaseGroup;
 import com.dong.djudge.entity.StandardCodeEntity;
-import com.dong.djudge.entity.TestCaseGroup;
-import com.dong.djudge.entity.TestCaseGroupRoot;
 import com.dong.djudge.entity.TestGroupEntity;
-import com.dong.djudge.entity.judge.RunResult;
 import com.dong.djudge.entity.judge.RunResultRoot;
 import com.dong.djudge.entity.judge.StandardCode;
 import com.dong.djudge.enums.CodeRunTypeEnum;
@@ -28,9 +28,7 @@ import com.dong.djudge.util.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author 樊东升
@@ -79,7 +77,7 @@ public class StandardCodeServiceImpl extends ServiceImpl<StandardCodeMapper, Sta
             return init;
         }
         // 获取测试用例组根
-        List<TestCaseGroupRoot> list = CommonUtils.getTestCaseGroupRoots(runResultRoot);
+        List<SaveCaseGroupRoot> list = CommonUtils.getRunResultList(runResultRoot);
         // 返回带有代码 ID 的结果
         return getCodeId(standardCodeDTO, list);
     }
@@ -92,7 +90,7 @@ public class StandardCodeServiceImpl extends ServiceImpl<StandardCodeMapper, Sta
             return init;
         }
         // 获取测试用例组根
-        List<TestCaseGroupRoot> list = CommonUtils.getTestCaseGroupRoots(runResultRoot);
+        List<SaveCaseGroupRoot> list = CommonUtils.getRunResultList(runResultRoot);
         // 将测试用例组根转换为 JSON 字符串
         String json = JSON.toJSONString(list);
 
@@ -190,7 +188,7 @@ public class StandardCodeServiceImpl extends ServiceImpl<StandardCodeMapper, Sta
      * @return 带有生成的代码ID的 ResponseResult。
      * @throws Exception 如果在代码执行过程中发生错误。
      */
-    private ResponseResult<String> getCodeId(standardCodeDTO standardCodeDTO, List<TestCaseGroupRoot> list) throws Exception {
+    private ResponseResult<String> getCodeId(standardCodeDTO standardCodeDTO, List<SaveCaseGroupRoot> list) throws Exception {
         // 将测试用例组根转换为 JSON 字符串
         String json = JSON.toJSONString(list);
 

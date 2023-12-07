@@ -6,13 +6,14 @@ import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dong.djudge.dto.JudgeRequest;
-import com.dong.djudge.entity.TestCaseGroup;
-import com.dong.djudge.entity.TestCaseGroupRoot;
+import com.dong.djudge.entity.InTestCaseGroup;
+import com.dong.djudge.entity.InCaseGroupRoot;
 import com.dong.djudge.entity.TestGroupEntity;
 import com.dong.djudge.entity.judge.RunResult;
 import com.dong.djudge.entity.judge.RunResultForTestGroup;
 import com.dong.djudge.entity.judge.RunResultRoot;
 import com.dong.djudge.enums.InputFileEnum;
+import com.dong.djudge.enums.JudgeStateEnum;
 import com.dong.djudge.enums.ModeEnum;
 import com.dong.djudge.judge.LanguageConfigLoader;
 import com.dong.djudge.judge.entity.LanguageConfig;
@@ -88,22 +89,23 @@ public class RunTask {
         RunResultRoot runResultRoot = new RunResultRoot();
         try (ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor()) {
             List<Future<RunResultForTestGroup>> futures = new ArrayList<>();
-            for (TestCaseGroupRoot testCaseGroupRoot : CommonUtils.getTestCaseGroupList(request.getStandardCode().getInputFileContext())) {
-                Integer gid=testCaseGroupRoot.getGid();
-                for (TestCaseGroup testCaseGroup : testCaseGroupRoot.getInput()) {
-                    Integer id=testCaseGroup.getId();
+            for (InCaseGroupRoot inCaseGroupRoot : CommonUtils.getInTestGroupForJson(request.getStandardCode().getInputFileContext())) {
+                Integer gid= inCaseGroupRoot.getGid();
+                for (InTestCaseGroup inTestCaseGroup : inCaseGroupRoot.getInput()) {
+                    Integer id= inTestCaseGroup.getId();
                     Callable<RunResultForTestGroup> task = () -> {
                         // 执行任务，这里简单返回一个字符串
-                        JSONArray finalObjects = runService.testCase(languageConfigByName, request, fileId, testCaseGroup.getValue());
-                        RunResultForTestGroup runResult = JSON.parseArray(finalObjects.toString(), RunResultForTestGroup.class).get(0);
+                        JSONArray finalObjects = runService.testCase(languageConfigByName, request, fileId, inTestCaseGroup.getValue());
+                        RunResultForTestGroup runResult = JSON.parseArray(finalObjects.toString(), RunResultForTestGroup.class).getFirst();
                         runResult.setGid(gid);
                         runResult.setId(id);
-                        if (!"Accepted".equals(runResult.getOriginalStatus())) {
+                        if (!JudgeStateEnum.ACCEPTED.getDescription().equals(runResult.getOriginalStatus())) {
                             for (Future<RunResultForTestGroup> remainingFuture : futures) {
                                 remainingFuture.cancel(true);
                             }
                             runResultRoot.setErrorInfo(runResult.getFiles().getStderr());
                             runResultRoot.setState(runResult.getOriginalStatus());
+                            runResultRoot.setInput(inTestCaseGroup.getValue());
                         }
                         return runResult;
                     };

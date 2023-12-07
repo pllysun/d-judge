@@ -4,8 +4,12 @@ import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.io.resource.Resource;
 import cn.hutool.core.lang.UUID;
 import com.alibaba.fastjson2.JSON;
-import com.dong.djudge.entity.TestCaseGroup;
-import com.dong.djudge.entity.TestCaseGroupRoot;
+import com.dong.djudge.entity.InCaseGroupRoot;
+import com.dong.djudge.entity.InTestCaseGroup;
+import com.dong.djudge.entity.OutCaseGroupRoot;
+import com.dong.djudge.entity.OutTestCaseGroup;
+import com.dong.djudge.entity.SaveCaseGroupRoot;
+import com.dong.djudge.entity.SaveTestCaseGroup;
 import com.dong.djudge.entity.judge.RunResult;
 import com.dong.djudge.entity.judge.RunResultRoot;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +33,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -344,38 +347,38 @@ public class CommonUtils {
     public static boolean isValidJson(String jsonString) {
         try {
             // 尝试将JSON字符串解析为TestCaseGroupRoot对象的列表
-            List<TestCaseGroupRoot> testCaseGroupRoots = JSON.parseArray(jsonString, TestCaseGroupRoot.class);
+            List<InCaseGroupRoot> inCaseGroupRoots = JSON.parseArray(jsonString, InCaseGroupRoot.class);
 
             // 检查解析后的列表是否为null或空，表示JSON结构无效
-            if (testCaseGroupRoots == null || testCaseGroupRoots.isEmpty()) {
+            if (inCaseGroupRoots == null || inCaseGroupRoots.isEmpty()) {
                 return true; // 无效的JSON
             }
 
             // 创建一个Map以根据其'gid'值存储TestCaseGroupRoot对象
-            Map<Integer, TestCaseGroupRoot> rootMap = new HashMap<>();
+            Map<Integer, InCaseGroupRoot> rootMap = new HashMap<>();
 
             // 遍历TestCaseGroupRoot对象的列表
-            for (TestCaseGroupRoot testCaseGroupRoot : testCaseGroupRoots) {
+            for (InCaseGroupRoot inCaseGroupRoot : inCaseGroupRoots) {
                 // 检查Map中是否已存在'gid'值，表示重复
-                if (rootMap.containsKey(testCaseGroupRoot.getGid())) {
+                if (rootMap.containsKey(inCaseGroupRoot.getGid())) {
                     return true; // 具有重复'gid'的无效JSON
                 }
 
                 // 使用'gid'作为键将TestCaseGroupRoot对象添加到Map中
-                rootMap.put(testCaseGroupRoot.getGid(), testCaseGroupRoot);
+                rootMap.put(inCaseGroupRoot.getGid(), inCaseGroupRoot);
 
                 // 创建一个Map以根据其'id'值存储TestCaseGroup对象
-                Map<Integer, TestCaseGroup> caseMap = new HashMap<>();
+                Map<Integer, InTestCaseGroup> caseMap = new HashMap<>();
 
                 // 遍历当前TestCaseGroupRoot中的TestCaseGroup对象列表
-                for (TestCaseGroup testCaseGroup : testCaseGroupRoot.getInput()) {
+                for (InTestCaseGroup inTestCaseGroup : inCaseGroupRoot.getInput()) {
                     // 检查Map中是否已存在'id'值，表示重复
-                    if (caseMap.containsKey(testCaseGroup.getId())) {
+                    if (caseMap.containsKey(inTestCaseGroup.getId())) {
                         return true; // 具有重复'id'的无效JSON，位于同一TestCaseGroupRoot内
                     }
 
                     // 使用'id'作为键将TestCaseGroup对象添加到Map中
-                    caseMap.put(testCaseGroup.getId(), testCaseGroup);
+                    caseMap.put(inTestCaseGroup.getId(), inTestCaseGroup);
                 }
             }
 
@@ -389,13 +392,25 @@ public class CommonUtils {
 
 
     /**
-     * 从 JSON 字符串中解析测试用例组列表.
+     * 将 JSON 字符串转换为 InCaseGroupRoot 对象的列表。
      *
-     * @param jsonString 包含测试用例组信息的 JSON 字符串
-     * @return 测试用例组列表
+     * @param jsonString 要转换的 JSON 字符串
+     * @return 包含 InCaseGroupRoot 对象的列表
      */
-    public static List<TestCaseGroupRoot> getTestCaseGroupList(String jsonString) {
-        return JSON.parseArray(jsonString, TestCaseGroupRoot.class);
+    public static List<InCaseGroupRoot> getInTestGroupForJson(String jsonString) {
+        // 使用 fastjson 的 parseArray 方法将 JSON 字符串转换为 InCaseGroupRoot 对象的列表
+        return JSON.parseArray(jsonString, InCaseGroupRoot.class);
+    }
+
+    /**
+     * 将 JSON 字符串转换为 SaveCaseGroupRoot 对象的列表。
+     *
+     * @param jsonString 要转换的 JSON 字符串
+     * @return 包含 SaveCaseGroupRoot 对象的列表
+     */
+    public static List<SaveCaseGroupRoot> getSaveTestGroupForJson(String jsonString) {
+        // 使用 fastjson 的 parseArray 方法将 JSON 字符串转换为 SaveCaseGroupRoot 对象的列表
+        return JSON.parseArray(jsonString, SaveCaseGroupRoot.class);
     }
 
 
@@ -403,7 +418,7 @@ public class CommonUtils {
      * 将指定的 JSON 字符串写入文件，并构建包含文件内容的 ResponseEntity 对象.
      *
      * @param standardCodeId 要写入的文件的唯一标识
-     * @param jsonContent 要写入文件的 JSON 内容字符串
+     * @param jsonContent    要写入文件的 JSON 内容字符串
      * @return 包含文件内容的 ResponseEntity 对象
      */
     public static ResponseEntity<Object> getObjectResponseEntity(String standardCodeId, String jsonContent) {
@@ -426,15 +441,30 @@ public class CommonUtils {
         }
     }
 
-    public static Map<Integer,Map<Integer, TestCaseGroup>> getTestCaseGroupMapByList(List<TestCaseGroupRoot> testCaseGroupRootList){
-        Map<Integer,Map<Integer, TestCaseGroup>> testCaseGroupRootMap = new HashMap<>();
-        for (TestCaseGroupRoot testCaseGroupRoot : testCaseGroupRootList) {
-            Map<Integer, TestCaseGroup> orDefault = testCaseGroupRootMap.getOrDefault(testCaseGroupRoot.getGid(), new HashMap<>());
-            for (TestCaseGroup testCaseGroup : testCaseGroupRoot.getInput()) {
-                orDefault.put(testCaseGroup.getId(),testCaseGroup);
+    /**
+     * 将 TestCaseGroupRoot 列表转换为 Map，其中每个 TestCaseGroupRoot 的 gid 值映射到另一个 Map，
+     * 该 Map 将每个 TestCaseGroup 的 id 值映射到相应的 TestCaseGroup 对象。
+     *
+     * @param inCaseGroupRootList 包含 TestCaseGroupRoot 对象的列表
+     * @return 一个 Map，其中每个 TestCaseGroupRoot 的 gid 值映射到另一个 Map，
+     * 该 Map 将每个 TestCaseGroup 的 id 值映射到相应的 TestCaseGroup 对象
+     */
+    public static Map<Integer, Map<Integer, InTestCaseGroup>> getTestCaseGroupMapByList(List<InCaseGroupRoot> inCaseGroupRootList) {
+        // 创建一个新的 Map 来存储结果
+        Map<Integer, Map<Integer, InTestCaseGroup>> testCaseGroupRootMap = new HashMap<>();
+        // 遍历 testCaseGroupRootList
+        for (InCaseGroupRoot inCaseGroupRoot : inCaseGroupRootList) {
+            // 从 testCaseGroupRootMap 中获取或创建一个新的 Map，该 Map 将每个 TestCaseGroup 的 id 值映射到相应的 TestCaseGroup 对象
+            Map<Integer, InTestCaseGroup> orDefault = testCaseGroupRootMap.getOrDefault(inCaseGroupRoot.getGid(), new HashMap<>());
+            // 遍历 testCaseGroupRoot 的输入列表
+            for (InTestCaseGroup inTestCaseGroup : inCaseGroupRoot.getInput()) {
+                // 将 testCaseGroup 的 id 值和 testCaseGroup 对象添加到 Map 中
+                orDefault.put(inTestCaseGroup.getId(), inTestCaseGroup);
             }
-            testCaseGroupRootMap.put(testCaseGroupRoot.getGid(),orDefault);
+            // 将 gid 值和 Map 添加到 testCaseGroupRootMap 中
+            testCaseGroupRootMap.put(inCaseGroupRoot.getGid(), orDefault);
         }
+        // 返回结果 Map
         return testCaseGroupRootMap;
     }
 
@@ -443,25 +473,74 @@ public class CommonUtils {
      *
      * @return 表示测试用例组的 TestCaseGroupRoot 列表。
      */
-    public static List<TestCaseGroupRoot> getTestCaseGroupRoots(RunResultRoot runResultRoot) {
-        List<TestCaseGroupRoot> list = new ArrayList<>();
+    public static List<SaveCaseGroupRoot> getRunResultList(RunResultRoot runResultRoot) {
+        List<SaveCaseGroupRoot> list = new ArrayList<>();
         // 遍历 runResultRoot 提取测试用例组信息
         for (Integer i : runResultRoot.getRunResult().keySet()) {
-            TestCaseGroupRoot testCaseGroupRoot = new TestCaseGroupRoot();
+            SaveCaseGroupRoot saveCaseGroupRoot = new SaveCaseGroupRoot();
             Map<Integer, RunResult> integerRunResultMap = runResultRoot.getRunResult().get(i);
             for (Integer j : integerRunResultMap.keySet()) {
-                TestCaseGroup testCaseGroup = new TestCaseGroup();
+                SaveTestCaseGroup saveTestCaseGroup = new SaveTestCaseGroup();
                 RunResult runResult = integerRunResultMap.get(j);
-                testCaseGroup.setId(j);
-                testCaseGroup.setValue(runResult.getFiles().getStdout());
+                saveTestCaseGroup.setId(j);
+                saveTestCaseGroup.setValue(runResult.getFiles().getStdout());
                 // 将 testCaseGroup 添加到 testCaseGroupRoot 的输入列表中
-                if (testCaseGroupRoot.getInput() == null) {
-                    testCaseGroupRoot.setInput(new ArrayList<>());
+                if (saveCaseGroupRoot.getSavePut() == null) {
+                    saveCaseGroupRoot.setSavePut(new ArrayList<>());
                 }
-                testCaseGroupRoot.getInput().add(testCaseGroup);
+                saveCaseGroupRoot.getSavePut().add(saveTestCaseGroup);
+                saveCaseGroupRoot.setGid(i);
             }
-            list.add(testCaseGroupRoot);
+            list.add(saveCaseGroupRoot);
         }
+        return list;
+    }
+
+    /**
+     * 比较两个 SaveCaseGroupRoot 列表，并根据每个 SaveTestCaseGroup 的 value 值是否相等来设置其 isAccepted 属性。
+     * 如果在同一 SaveCaseGroupRoot 中的任何 SaveTestCaseGroup 的 value 值不相等，那么该 SaveCaseGroupRoot 的 groupAccepted 属性将被设置为 false。
+     *
+     * @param TA 测试答案，包含 SaveCaseGroupRoot 对象的列表
+     * @param SA 标准答案，包含 SaveCaseGroupRoot 对象的列表
+     * @return 更新后的 TA 列表，其中每个 SaveTestCaseGroup 和 SaveCaseGroupRoot 的 isAccepted 属性已经根据比较结果进行了设置
+     */
+    public static List<OutCaseGroupRoot> getTestCaseGroupRoots(List<SaveCaseGroupRoot> TA, List<SaveCaseGroupRoot> SA) {
+        // 创建一个新的 OutCaseGroupRoot 列表来存储结果
+        List<OutCaseGroupRoot> list=new ArrayList<>();
+        // 遍历 TA 列表
+        for (int i = 0; i < TA.size(); i++) {
+            // 获取当前位置的 SaveCaseGroupRoot 对象
+            SaveCaseGroupRoot ta = TA.get(i);
+            SaveCaseGroupRoot sa = SA.get(i);
+            // 创建一个新的 OutCaseGroupRoot 对象
+            OutCaseGroupRoot outCaseGroupRoot = new OutCaseGroupRoot();
+            // 遍历当前 SaveCaseGroupRoot 的输入列表
+            for (int j = 0; j < ta.getSavePut().size(); j++) {
+                // 创建一个新的 OutTestCaseGroup 对象
+                OutTestCaseGroup outTestCaseGroup = new OutTestCaseGroup();
+                // 获取当前位置的 SaveTestCaseGroup 对象
+                SaveTestCaseGroup t = ta.getSavePut().get(j);
+                SaveTestCaseGroup s = sa.getSavePut().get(j);
+                // 设置 OutTestCaseGroup 的 id 和 value 属性
+                outTestCaseGroup.setId(t.getId());
+                outTestCaseGroup.setValue(t.getValue());
+                // 比较 SaveTestCaseGroup 的 value 值是否相等
+                if (!t.getValue().equals(s.getValue())) {
+                    // 如果 value 值不相等，设置 isAccepted 为 false，并将 OutCaseGroupRoot 的 groupAccepted 设置为 false
+                    outTestCaseGroup.setAccepted(false);
+                    outCaseGroupRoot.setGroupAccepted(false);
+                }
+                // 将 OutTestCaseGroup 对象添加到 OutCaseGroupRoot 的输出列表中
+                if(outCaseGroupRoot.getOutput()==null){
+                    outCaseGroupRoot.setOutput(new ArrayList<>());
+                }
+                outCaseGroupRoot.getOutput().add(outTestCaseGroup);
+            }
+            outCaseGroupRoot.setGid(ta.getGid());
+            // 将 OutCaseGroupRoot 对象添加到结果列表中
+            list.add(outCaseGroupRoot);
+        }
+        // 返回结果列表
         return list;
     }
 

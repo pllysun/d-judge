@@ -51,6 +51,10 @@ public class ResponseResult<T> implements Serializable {
         return new ResponseResult<T>(ResultStatus.SUCCESS.getCode(), msg, null);
     }
 
+    public static <T> ResponseResult<T> successResponse(String msg,T data) {
+        return new ResponseResult<T>(ResultStatus.SUCCESS.getCode(), msg, data);
+    }
+
 
     public static <T> ResponseResult<T> failResponse(String msg) {
         return new ResponseResult<T>(ResultStatus.FAIL.getCode(), msg, null);

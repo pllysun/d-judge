@@ -6,10 +6,10 @@ import java.util.List;
 
 /**
  * @author 樊东升
- * @date 2023/12/4 20:19
+ * @date 2023/12/7 21:17
  */
 @Data
-public class TestCaseGroupRoot {
+public class SaveCaseGroupRoot {
     /**
      * 测试组群ID
      */
@@ -17,5 +17,5 @@ public class TestCaseGroupRoot {
     /**
      * 测试组内容
      */
-    private List<TestCaseGroup> input;
+    private List<SaveTestCaseGroup> savePut;
 }

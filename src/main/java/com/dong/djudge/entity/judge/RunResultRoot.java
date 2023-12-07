@@ -15,6 +15,8 @@ public class RunResultRoot {
     Map<Integer, Map<Integer, RunResult>> runResult;
     String errorInfo;
     String state;
+    String input;
+    String output;
 
     public RunResultRoot() {
     }
