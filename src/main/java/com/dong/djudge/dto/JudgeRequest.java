@@ -22,10 +22,6 @@ public class JudgeRequest implements Serializable {
     @Serial
     private static final long serialVersionUID = 666L;
     /**
-     * 代码相关设置
-     */
-    CodeSetting codeSetting;
-    /**
      * 评测的类型(0-OI,1-OJ,2-ACM,3-CODE)
      */
     private String modeType;
@@ -49,7 +45,10 @@ public class JudgeRequest implements Serializable {
      * 标准代码
      */
     private StandardCode standardCode;
-
+    /**
+     * 代码相关设置
+     */
+    CodeSetting codeSetting;
     public JudgeRequest(String code, String language) {
         this.code = code;
         this.language = language;

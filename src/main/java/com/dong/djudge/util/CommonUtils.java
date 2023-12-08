@@ -4,7 +4,13 @@ import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.io.resource.Resource;
 import cn.hutool.core.lang.UUID;
 import com.alibaba.fastjson2.JSON;
-import com.dong.djudge.entity.*;
+import com.dong.djudge.entity.InCaseGroupRoot;
+import com.dong.djudge.entity.InTestCaseGroup;
+import com.dong.djudge.entity.OutCaseGroupRoot;
+import com.dong.djudge.entity.OutCaseResult;
+import com.dong.djudge.entity.OutTestCaseGroup;
+import com.dong.djudge.entity.SaveCaseGroupRoot;
+import com.dong.djudge.entity.SaveTestCaseGroup;
 import com.dong.djudge.entity.judge.RunResult;
 import com.dong.djudge.entity.judge.RunResultRoot;
 import lombok.extern.slf4j.Slf4j;
@@ -492,7 +498,6 @@ public class CommonUtils {
     }
 
     /**
-     *
      * @param runResultRoot
      * @param outCaseGroupRootList
      * @return
@@ -514,9 +519,9 @@ public class CommonUtils {
                 objectObjectHashMap.put(j, outCaseResult);
             }
             OutCaseResult outCaseResult = new OutCaseResult();
-            outCaseResult.setTime(time);
-            outCaseResult.setRunTime(runTime);
-            outCaseResult.setMemory(memory);
+            outCaseResult.setTime(time/1000000);
+            outCaseResult.setRunTime(runTime/1000000);
+            outCaseResult.setMemory(memory/1024);
             rootMap.put(i, outCaseResult);
             caseMap.put(i, objectObjectHashMap);
         }
@@ -527,11 +532,11 @@ public class CommonUtils {
             int j = 0;
             for (OutTestCaseGroup outTestCaseGroup : outCaseGroupRoot.getOutput()) {
                 OutCaseResult ocr = new OutCaseResult();
-                ocr.setMemory(caseMap.get(j).get(i).getMemory());
-                ocr.setRunTime(caseMap.get(j).get(i).getRunTime());
-                ocr.setTime(caseMap.get(j).get(i).getTime());
+                ocr.setMemory(caseMap.get(i).get(j).getMemory()/1024);
+                ocr.setRunTime(caseMap.get(i).get(j).getRunTime()/1000000);
+                ocr.setTime(caseMap.get(i).get(j).getTime()/1000000);
                 j++;
-                outTestCaseGroup.setCaseResult(outCaseResult);
+                outTestCaseGroup.setCaseResult(ocr);
             }
             i++;
         }

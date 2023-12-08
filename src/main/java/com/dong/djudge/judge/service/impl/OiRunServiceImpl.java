@@ -23,7 +23,7 @@ public class OiRunServiceImpl implements RunService {
 
 
     /**
-     * 默认最大运行时间，单位ns 10s
+     * 默认最大运行时间，单位ns 1s
      */
     Integer maxTime = 1000;
     /**
@@ -37,7 +37,7 @@ public class OiRunServiceImpl implements RunService {
     /**
      * 最大输出，单位byte 10K
      */
-    Integer maxOutput = 10240;
+    Integer maxOutput = 10;
 
     @Override
     public JSONArray testCase(LanguageConfig languageConfig, JudgeRequest request, String fileId, String testCaseContent) throws SystemException {

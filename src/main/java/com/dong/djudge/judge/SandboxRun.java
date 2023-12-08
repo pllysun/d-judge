@@ -239,8 +239,8 @@ public class SandboxRun {
                                      List<String> envs,
                                      Integer maxTime,
                                      Integer maxMemory,
-                                     Integer maxOutputSize,
                                      Integer maxStack,
+                                     Integer maxOutputSize,
                                      String exeName,
                                      String fileId,
                                      String fileContent,
@@ -259,7 +259,7 @@ public class SandboxRun {
         if (BooleanUtils.isFalse(isFileIO)) {
             JSONObject stdout = new JSONObject();
             stdout.set("name", "stdout");
-            stdout.set("max", maxOutputSize);
+            stdout.set("max", maxOutputSize*1024);
             files.put(testCaseInput);
             files.put(stdout);
         }
