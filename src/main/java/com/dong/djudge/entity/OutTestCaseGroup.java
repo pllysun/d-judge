@@ -21,4 +21,9 @@ public class OutTestCaseGroup {
      * 该测试是否通过
      */
     private boolean isAccepted = true;
+
+    /**
+     * 测试用例状态
+     */
+    private OutCaseResult caseResult;
 }

@@ -58,7 +58,7 @@ public class JudgeController {
         Integer code = typeByName.getCode();
         switch (code) {
             case 0:
-                return oiJudge(request);
+                return oiJudgeService.Judge(request);
             case 1:
                 return ojJudgeService.Judge(request);
             case 2:
@@ -76,8 +76,5 @@ public class JudgeController {
         return ResponseResult.exceptionError("异常错误");
     }
 
-    private ResponseResult<Object> oiJudge(JudgeRequest request) throws Exception {
-        return oiJudgeService.Judge(request);
-    }
 
 }

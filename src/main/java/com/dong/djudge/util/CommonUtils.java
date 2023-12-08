@@ -4,12 +4,7 @@ import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.io.resource.Resource;
 import cn.hutool.core.lang.UUID;
 import com.alibaba.fastjson2.JSON;
-import com.dong.djudge.entity.InCaseGroupRoot;
-import com.dong.djudge.entity.InTestCaseGroup;
-import com.dong.djudge.entity.OutCaseGroupRoot;
-import com.dong.djudge.entity.OutTestCaseGroup;
-import com.dong.djudge.entity.SaveCaseGroupRoot;
-import com.dong.djudge.entity.SaveTestCaseGroup;
+import com.dong.djudge.entity.*;
 import com.dong.djudge.entity.judge.RunResult;
 import com.dong.djudge.entity.judge.RunResultRoot;
 import lombok.extern.slf4j.Slf4j;
@@ -497,6 +492,54 @@ public class CommonUtils {
     }
 
     /**
+     *
+     * @param runResultRoot
+     * @param outCaseGroupRootList
+     * @return
+     */
+    public static List<OutCaseGroupRoot> getCaseResult(RunResultRoot runResultRoot, List<OutCaseGroupRoot> outCaseGroupRootList) {
+        Map<Integer, OutCaseResult> rootMap = new HashMap<>();
+        Map<Integer, Map<Integer, OutCaseResult>> caseMap = new HashMap<>();
+        Map<Integer, Map<Integer, RunResult>> runResult = runResultRoot.getRunResult();
+        for (Integer i : runResult.keySet()) {
+            HashMap<Integer, OutCaseResult> objectObjectHashMap = new HashMap<>();
+            Map<Integer, RunResult> integerRunResultMap = runResult.get(i);
+            long time = 0L, runTime = 0L, memory = 0L;
+            for (Integer j : integerRunResultMap.keySet()) {
+                RunResult rR = integerRunResultMap.get(j);
+                time += rR.getTime();
+                runTime += rR.getRunTime();
+                memory += rR.getMemory();
+                OutCaseResult outCaseResult = new OutCaseResult(time, runTime, memory);
+                objectObjectHashMap.put(j, outCaseResult);
+            }
+            OutCaseResult outCaseResult = new OutCaseResult();
+            outCaseResult.setTime(time);
+            outCaseResult.setRunTime(runTime);
+            outCaseResult.setMemory(memory);
+            rootMap.put(i, outCaseResult);
+            caseMap.put(i, objectObjectHashMap);
+        }
+        int i = 0;
+        for (OutCaseGroupRoot outCaseGroupRoot : outCaseGroupRootList) {
+            OutCaseResult outCaseResult = rootMap.get(outCaseGroupRoot.getGid());
+            outCaseGroupRoot.setGroupResult(outCaseResult);
+            int j = 0;
+            for (OutTestCaseGroup outTestCaseGroup : outCaseGroupRoot.getOutput()) {
+                OutCaseResult ocr = new OutCaseResult();
+                ocr.setMemory(caseMap.get(j).get(i).getMemory());
+                ocr.setRunTime(caseMap.get(j).get(i).getRunTime());
+                ocr.setTime(caseMap.get(j).get(i).getTime());
+                j++;
+                outTestCaseGroup.setCaseResult(outCaseResult);
+            }
+            i++;
+        }
+        return outCaseGroupRootList;
+    }
+
+
+    /**
      * 比较两个 SaveCaseGroupRoot 列表，并根据每个 SaveTestCaseGroup 的 value 值是否相等来设置其 isAccepted 属性。
      * 如果在同一 SaveCaseGroupRoot 中的任何 SaveTestCaseGroup 的 value 值不相等，那么该 SaveCaseGroupRoot 的 groupAccepted 属性将被设置为 false。
      *
@@ -506,7 +549,7 @@ public class CommonUtils {
      */
     public static List<OutCaseGroupRoot> getTestCaseGroupRoots(List<SaveCaseGroupRoot> TA, List<SaveCaseGroupRoot> SA) {
         // 创建一个新的 OutCaseGroupRoot 列表来存储结果
-        List<OutCaseGroupRoot> list=new ArrayList<>();
+        List<OutCaseGroupRoot> list = new ArrayList<>();
         // 遍历 TA 列表
         for (int i = 0; i < TA.size(); i++) {
             // 获取当前位置的 SaveCaseGroupRoot 对象
@@ -531,7 +574,7 @@ public class CommonUtils {
                     outCaseGroupRoot.setGroupAccepted(false);
                 }
                 // 将 OutTestCaseGroup 对象添加到 OutCaseGroupRoot 的输出列表中
-                if(outCaseGroupRoot.getOutput()==null){
+                if (outCaseGroupRoot.getOutput() == null) {
                     outCaseGroupRoot.setOutput(new ArrayList<>());
                 }
                 outCaseGroupRoot.getOutput().add(outTestCaseGroup);

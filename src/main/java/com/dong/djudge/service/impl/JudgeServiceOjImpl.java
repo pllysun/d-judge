@@ -41,7 +41,7 @@ public class JudgeServiceOjImpl extends ServiceImpl<TestGroupMapper, TestGroupEn
     @Autowired
     private StandardCodeMapper standardCodeMapper;
 
-    private RunTask runTask = SpringUtil.getBean(RunTask.class);
+    private final RunTask runTask = SpringUtil.getBean(RunTask.class);
 
     @Override
     public ResponseResult<Object> Judge(JudgeRequest request) throws Exception {
@@ -64,11 +64,12 @@ public class JudgeServiceOjImpl extends ServiceImpl<TestGroupMapper, TestGroupEn
         String jsonForFile = CommonUtils.getJsonForFile(request.getStandardCode().getRunCodeId());
         List<SaveCaseGroupRoot> sa = CommonUtils.getSaveTestGroupForJson(jsonForFile);
         List<OutCaseGroupRoot> outCaseGroupRootList = CommonUtils.getTestCaseGroupRoots(ta, sa);
-        for (OutCaseGroupRoot outCaseGroupRoot : outCaseGroupRootList) {
+        List<OutCaseGroupRoot> caseResult = CommonUtils.getCaseResult(runResultRoot, outCaseGroupRootList);
+        for (OutCaseGroupRoot outCaseGroupRoot : caseResult) {
             if(!outCaseGroupRoot.isGroupAccepted()){
-                return ResponseResult.failResponse(JudgeStateEnum.WRONG_ANSWER.getDescription(),outCaseGroupRootList);
+                return ResponseResult.failResponse(JudgeStateEnum.WRONG_ANSWER.getDescription(),caseResult);
             }
         }
-        return ResponseResult.successResponse(JudgeStateEnum.ACCEPTED.getDescription(), outCaseGroupRootList);
+        return ResponseResult.successResponse(JudgeStateEnum.ACCEPTED.getDescription(), caseResult);
     }
 }
