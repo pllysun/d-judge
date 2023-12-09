@@ -16,6 +16,7 @@ import com.dong.djudge.enums.InputFileEnum;
 import com.dong.djudge.enums.JudgeStateEnum;
 import com.dong.djudge.enums.ModeEnum;
 import com.dong.djudge.judge.LanguageConfigLoader;
+import com.dong.djudge.judge.SandboxRun;
 import com.dong.djudge.judge.entity.LanguageConfig;
 import com.dong.djudge.judge.service.RunService;
 import com.dong.djudge.mapper.TestGroupMapper;
@@ -119,6 +120,8 @@ public class RunTask {
             }
             runResultRoot.setRunResult(list);
             executorService.shutdown();
+            //运行完毕删除沙盒里面的文件
+            SandboxRun.delFile(fileId);
         } catch (CancellationException e) {
             log.warn("任务取消:{}", e.getMessage());
         } catch (ExecutionException | InterruptedException e) {

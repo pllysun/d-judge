@@ -498,48 +498,45 @@ public class CommonUtils {
     }
 
     /**
-     * @param runResultRoot
-     * @param outCaseGroupRootList
-     * @return
+     * 获取并设置测试用例组的运行结果
+     *
+     * @param runResultRoot 包含运行结果的对象
+     * @param outCaseGroupRootList 测试用例组列表，将被设置运行结果
+     * @return 更新后的测试用例组列表
      */
     public static List<OutCaseGroupRoot> getCaseResult(RunResultRoot runResultRoot, List<OutCaseGroupRoot> outCaseGroupRootList) {
-        Map<Integer, OutCaseResult> rootMap = new HashMap<>();
-        Map<Integer, Map<Integer, OutCaseResult>> caseMap = new HashMap<>();
+        Map<Integer, OutCaseResult> groupResultMap = new HashMap<>();
+        Map<Integer, Map<Integer, OutCaseResult>> testCaseResultMap = new HashMap<>();
         Map<Integer, Map<Integer, RunResult>> runResult = runResultRoot.getRunResult();
-        for (Integer i : runResult.keySet()) {
-            HashMap<Integer, OutCaseResult> objectObjectHashMap = new HashMap<>();
-            Map<Integer, RunResult> integerRunResultMap = runResult.get(i);
-            long time = 0L, runTime = 0L, memory = 0L;
-            for (Integer j : integerRunResultMap.keySet()) {
-                RunResult rR = integerRunResultMap.get(j);
-                time += rR.getTime();
-                runTime += rR.getRunTime();
-                memory += rR.getMemory();
-                OutCaseResult outCaseResult = new OutCaseResult(time, runTime, memory);
-                objectObjectHashMap.put(j, outCaseResult);
+
+        for (Map.Entry<Integer, Map<Integer, RunResult>> groupEntry : runResult.entrySet()) {
+            Map<Integer, OutCaseResult> testCaseMap = new HashMap<>();
+            long totalTime = 0L, totalRunTime = 0L, totalMemory = 0L;
+
+            for (Map.Entry<Integer, RunResult> testCaseEntry : groupEntry.getValue().entrySet()) {
+                RunResult rR = testCaseEntry.getValue();
+                totalTime += rR.getTime();
+                totalRunTime += rR.getRunTime();
+                totalMemory += rR.getMemory();
+                testCaseMap.put(testCaseEntry.getKey(), new OutCaseResult(totalTime, totalRunTime, totalMemory));
             }
-            OutCaseResult outCaseResult = new OutCaseResult();
-            outCaseResult.setTime(time/1000000);
-            outCaseResult.setRunTime(runTime/1000000);
-            outCaseResult.setMemory(memory/1024);
-            rootMap.put(i, outCaseResult);
-            caseMap.put(i, objectObjectHashMap);
+
+            groupResultMap.put(groupEntry.getKey(), new OutCaseResult(totalTime/1000000, totalRunTime/1000000, totalMemory/1024));
+            testCaseResultMap.put(groupEntry.getKey(), testCaseMap);
         }
-        int i = 0;
+
         for (OutCaseGroupRoot outCaseGroupRoot : outCaseGroupRootList) {
-            OutCaseResult outCaseResult = rootMap.get(outCaseGroupRoot.getGid());
-            outCaseGroupRoot.setGroupResult(outCaseResult);
-            int j = 0;
+            outCaseGroupRoot.setGroupResult(groupResultMap.get(outCaseGroupRoot.getGid()));
+
             for (OutTestCaseGroup outTestCaseGroup : outCaseGroupRoot.getOutput()) {
-                OutCaseResult ocr = new OutCaseResult();
-                ocr.setMemory(caseMap.get(i).get(j).getMemory()/1024);
-                ocr.setRunTime(caseMap.get(i).get(j).getRunTime()/1000000);
-                ocr.setTime(caseMap.get(i).get(j).getTime()/1000000);
-                j++;
+                OutCaseResult ocr = testCaseResultMap.get(outCaseGroupRoot.getGid()).get(outTestCaseGroup.getId());
+                ocr.setMemory(ocr.getMemory()/1024);
+                ocr.setRunTime(ocr.getRunTime()/1000000);
+                ocr.setTime(ocr.getTime()/1000000);
                 outTestCaseGroup.setCaseResult(ocr);
             }
-            i++;
         }
+
         return outCaseGroupRootList;
     }
 
