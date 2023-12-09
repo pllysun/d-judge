@@ -66,7 +66,7 @@ public class SandboxRun {
     private static final RestTemplate restTemplate;
     // 单例模式
     private static final SandboxRun instance = new SandboxRun();
-    private static final String SANDBOX_BASE_URL = "http://8.219.11.202:5050";
+    private static final String SANDBOX_BASE_URL = "http://8.219.11.202:5051";
     private static final int maxProcessNumber = 128;
     private static final int TIME_LIMIT_MS = 16000;
     private static final int MEMORY_LIMIT_MB = 512;

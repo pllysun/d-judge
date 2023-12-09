@@ -123,6 +123,7 @@ public class RunTask {
             //运行完毕删除沙盒里面的文件
             SandboxRun.delFile(fileId);
         } catch (CancellationException e) {
+            SandboxRun.delFile(fileId);
             log.warn("任务取消:{}", e.getMessage());
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
