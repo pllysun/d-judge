@@ -26,9 +26,9 @@ public class SqliteConfig {
     @PostConstruct
     public void init() {
         jdbcTemplate.update(createFile());
-        jdbcTemplate.update(dropTrigger1());
-        jdbcTemplate.update(createFileTrigger1());
         jdbcTemplate.update(createStandardCode());
+        jdbcTemplate.update(createSandboxSetting());
+        jdbcTemplate.update(createSandboxRun());
         List<Map<String, Object>> maps = jdbcTemplate.queryForList("SELECT * FROM test_group");
         log.info(Arrays.toString(maps.toArray()));
     }
@@ -42,15 +42,6 @@ public class SqliteConfig {
                 ");";
     }
 
-    private String dropTrigger1() {
-        return "DROP TRIGGER IF EXISTS update_file_trigger;";
-    }
-
-    private String createFileTrigger1() {
-        return "CREATE TRIGGER update_file_trigger AFTER UPDATE ON test_group BEGIN UPDATE file SET update_time = strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime') WHERE id = NEW.id; END;";
-    }
-
-
     private String createStandardCode() {
         return """
                 CREATE TABLE IF NOT EXISTS standard_code (
@@ -60,6 +51,33 @@ public class SqliteConfig {
                     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE (code_id)
+                );
+                """;
+    }
+
+
+    private String createSandboxSetting(){
+        return """
+                CREATE TABLE IF NOT EXISTS sandbox_setting (
+                    id BIGINT PRIMARY KEY,
+                    base_url VARCHAR(64) NOT NULL,
+                    state INT NOT NULL,
+                    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE (base_url)
+                );
+                """;
+    }
+
+    private String createSandboxRun(){
+        return """
+                CREATE TABLE IF NOT EXISTS sandbox_run (
+                    id BIGINT PRIMARY KEY,
+                    file_id VARCHAR(64) NOT NULL,
+                    base_url VARCHAR(64) NOT NULL,
+                    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE (file_id)
                 );
                 """;
     }
