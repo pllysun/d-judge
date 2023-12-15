@@ -44,7 +44,11 @@ public class ScheduledConfig {
         for (String sandBoxUrl : sandBoxUrlList) {
             try {
                 System.out.println(sandBoxStateMap.get(url));
+                long startTime = System.currentTimeMillis();
                 ResponseEntity<String> response = restTemplate.getForEntity(sandBoxUrl, String.class);
+                long endTime = System.currentTimeMillis();
+                long duration = endTime - startTime;
+                log.info("请求耗时：{}ms", duration);
                 byte[] responseBytes = Objects.requireNonNull(response.getBody()).getBytes(StandardCharsets.UTF_8);
                 log.info(String.valueOf(responseBytes.length));
                 LambdaQueryWrapper<SandBoxSetting> lambda = new QueryWrapper<SandBoxSetting>().lambda();
