@@ -10,17 +10,23 @@ import java.util.Date;
 
 @Data
 @TableName(value = "sandbox_setting")
-public class SandBoxSetting {
-    @TableId(value = "id", type = IdType.NONE)
-    private Long id;
+public class SandBoxSetting extends AbstractPojo {
     @TableField(value = "base_url")
     private String baseUrl;
     @TableField(value = "state")
     private Integer state;
     @TableField(value = "level")
     private Integer level;
-    @TableField(value = "create_time")
-    private Date createTime;
-    @TableField(value = "update_time")
-    private Date updateTime;
+    @TableField(value = "frequency")
+    private Integer frequency;
+
+    public SandBoxSetting(String baseUrl) {
+        this.baseUrl = baseUrl;
+        this.state=1;
+        this.level=8;
+        this.frequency=0;
+    }
+
+    public SandBoxSetting() {
+    }
 }
