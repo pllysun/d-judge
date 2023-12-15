@@ -2,13 +2,8 @@ package com.dong.djudge.pojo;
 
 import lombok.Data;
 
-import java.util.Date;
-
 @Data
-public class SandBoxRun {
-    private Long id;
+public class SandBoxRun extends AbstractPojo {
     private String fileId;
     private String baseUrl;
-    private Date createTime;
-    private Date updateTime;
 }

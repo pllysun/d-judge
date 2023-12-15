@@ -64,6 +64,7 @@ public class SqliteConfig {
                     base_url VARCHAR(64) NOT NULL,
                     state INT NOT NULL,
                     level INT NOT NULL,
+                    frequency INT NOT NULL,
                     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE (base_url)
