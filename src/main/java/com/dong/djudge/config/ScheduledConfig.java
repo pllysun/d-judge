@@ -33,7 +33,7 @@ public class ScheduledConfig {
         sandBoxUrlList.add(url);
         sandBoxStateMap.put(url,true);
     }
-    @Scheduled(fixedRate = 5000)
+    @Scheduled(fixedRate = 60000)
     public void checkSandboxState() {
         if(sandBoxUrlList==null|| sandBoxUrlList.isEmpty()){
             List<SandBoxSetting> sandBoxSettings = sandBoxSettingMapper.selectList(null);

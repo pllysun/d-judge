@@ -29,6 +29,7 @@ public class SqliteConfig {
         jdbcTemplate.update(createStandardCode());
         jdbcTemplate.update(createSandboxSetting());
         jdbcTemplate.update(createSandboxRun());
+        jdbcTemplate.update(createSetting());
         List<Map<String, Object>> maps = jdbcTemplate.queryForList("SELECT * FROM test_group");
         log.info(Arrays.toString(maps.toArray()));
     }
@@ -62,6 +63,7 @@ public class SqliteConfig {
                     id BIGINT PRIMARY KEY,
                     base_url VARCHAR(64) NOT NULL,
                     state INT NOT NULL,
+                    level INT NOT NULL,
                     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE (base_url)
@@ -78,6 +80,19 @@ public class SqliteConfig {
                     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE (file_id)
+                );
+                """;
+    }
+
+    private String createSetting(){
+        return """
+                CREATE TABLE IF NOT EXISTS setting (
+                    id BIGINT PRIMARY KEY,
+                    key VARCHAR(64) NOT NULL,
+                    value VARCHAR(8192) NOT NULL,
+                    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE (key)
                 );
                 """;
     }

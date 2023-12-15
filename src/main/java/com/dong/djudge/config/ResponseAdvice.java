@@ -16,7 +16,11 @@ public class ResponseAdvice {
     @ExceptionHandler(value = Exception.class)
     public ResponseResult<String> exceptionHandler(Exception e) {
         log.error("全局异常捕获：{}", e.getMessage());
-        log.error(e.getCause().getMessage());
+        if (e.getCause() != null) {
+            log.error("全局异常捕获原因：{}", e.getCause().getMessage());
+        } else {
+            log.error("全局异常捕获原因：null");
+        }
         return ResponseResult.exceptionError(e.getMessage());
     }
 
