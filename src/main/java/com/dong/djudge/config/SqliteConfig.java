@@ -97,4 +97,17 @@ public class SqliteConfig {
                 );
                 """;
     }
+
+    private String createSystemMessage(){
+        return """
+                CREATE TABLE IF NOT EXISTS system_message (
+                    id BIGINT PRIMARY KEY,
+                    cpu VARCHAR(32) NOT NULL,
+                    memory VARCHAR(32) NOT NULL,
+                    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE (key)
+                );
+                """;
+    }
 }

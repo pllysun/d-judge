@@ -1,6 +1,8 @@
 package com.dong.djudge.config;
 
 import com.alibaba.fastjson2.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dong.djudge.entity.setting.CpuAndMemoryEntity;
 import com.dong.djudge.mapper.SandBoxSettingMapper;
 import com.dong.djudge.pojo.SandBoxSetting;
@@ -26,10 +28,9 @@ public class ScheduledConfig {
         // 从数据库获取沙盒设置列表
         List<SandBoxSetting> sandBoxSettings = sandBoxSettingMapper.selectList(null);
         for (SandBoxSetting sandBoxSetting : sandBoxSettings) {
-
             Thread.startVirtualThread(() -> {
 
-                // 如果沙盒设置级别为-1，则跳过当前迭代
+                // 如果沙盒设置级别为-1，则跳过当前迭代，也就是说，当级别为-1，只能通过手动设置级别来重新启动沙盒
                 if (sandBoxSetting.getLevel() == -1) {
                     return;
                 }
@@ -52,7 +53,10 @@ public class ScheduledConfig {
                 // 根据计算的分数调整沙盒设置的级别和状态
                 grades = adjustSandBoxSettingLevel(sandBoxSetting, grades);
                 adjustSandBoxSettingState(sandBoxSetting);
-                log.info("沙盒服务器地址：{}，分数：{}，级别：{}，状态：{}，频率：{}", sandBoxSetting.getBaseUrl(), grades, sandBoxSetting.getLevel(), sandBoxSetting.getState(),sandBoxSetting.getFrequency());
+                LambdaQueryWrapper<SandBoxSetting> lambda = new QueryWrapper<SandBoxSetting>().lambda();
+                lambda.eq(SandBoxSetting::getId, sandBoxSetting.getId());
+                sandBoxSettingMapper.update(sandBoxSetting, lambda);
+                log.info("沙盒服务器地址：{}，分数：{}，级别：{}，状态：{}，频率：{}", sandBoxSetting.getBaseUrl(), grades, sandBoxSetting.getLevel(), sandBoxSetting.getState(), sandBoxSetting.getFrequency());
             });
 
         }
@@ -81,10 +85,8 @@ public class ScheduledConfig {
         } else if (duration <= 10000) {
             grades += 4;
         } else if (duration <= 30000) {
-            sandBoxSetting.setFrequency(sandBoxSetting.getFrequency() + 1);
             grades += 5;
         } else {
-            sandBoxSetting.setFrequency(sandBoxSetting.getFrequency() + 2);
             grades += 6;
         }
         return grades;
@@ -102,38 +104,25 @@ public class ScheduledConfig {
     }
 
     private Integer calculateGradesBasedOnValue(double value, Integer grades) {
-        int caseValue = (int) (value * 10);
-        switch (caseValue) {
-            case 0:
-                grades--;
-                break;
-            case 1:
-                grades += 2;
-                break;
-            case 2:
-                grades += 3;
-                break;
-            case 3:
-                grades += 4;
-                break;
-            case 4:
-                grades += 5;
-                break;
-            case 5:
-                grades += 6;
-                break;
-            case 6:
-                grades += 9;
-                break;
-            case 7:
-                grades += 15;
-                break;
-            case 8:
-                grades += 20;
-                break;
-            default:
-                grades += 30;
-                break;
+        int caseValue = (int) (value);
+        if (caseValue < 10) {
+            grades--;
+        } else if (caseValue < 20) {
+            grades += 1;
+        } else if (caseValue < 30) {
+            grades += 2;
+        } else if (caseValue < 40) {
+            grades += 3;
+        } else if (caseValue < 50) {
+            grades += 4;
+        } else if (caseValue < 60) {
+            grades += 6;
+        } else if (caseValue < 70) {
+            grades += 10;
+        } else if (caseValue < 80) {
+            grades += 15;
+        } else {
+            grades += 25;
         }
         return grades;
     }
@@ -169,18 +158,18 @@ public class ScheduledConfig {
 
     private void adjustSandBoxSettingState(SandBoxSetting sandBoxSetting) {
         Integer frequency = sandBoxSetting.getFrequency();
-
         // 如果频率在特定范围内，调整级别和状态
-        if (frequency > 5 && frequency < 10) {
+        if (frequency >= 10 && frequency <= 20) {
             sandBoxSetting.setLevel(0);
-            sandBoxSetting.setState(0);
+            sandBoxSetting.setState(2);
             sandBoxSetting.setFrequency(0);
-        } else if (frequency >= 10) {
+            log.warn("沙盒服务器地址：{} 暂停服务", sandBoxSetting.getBaseUrl());
+        } else if (frequency > 20) {
             sandBoxSetting.setLevel(-1);
             sandBoxSetting.setState(0);
             sandBoxSetting.setFrequency(0);
+            log.warn("沙盒服务器地址：{} 停止服务", sandBoxSetting.getBaseUrl());
         }
-        sandBoxSetting.setFrequency(sandBoxSetting.getFrequency() + 1);
     }
 
 
