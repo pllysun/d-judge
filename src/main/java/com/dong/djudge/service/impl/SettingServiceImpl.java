@@ -65,7 +65,7 @@ public class SettingServiceImpl implements SettingService {
         sandBoxSettingMapper.insert(sandBoxSetting);
 
         // 返回带有设置URL的成功响应。
-        return ResponseResult.ok("URL: "+url+" 设置成功");
+        return ResponseResult.ok("URL: " + url + " 设置成功");
     }
 
     /**
@@ -82,7 +82,7 @@ public class SettingServiceImpl implements SettingService {
         }
         try {
             // 尝试对URL进行GET请求。
-            entity = restTemplate.getForEntity(url+"/version", String.class);
+            entity = restTemplate.getForEntity(url + "/version", String.class);
 
         } catch (Exception e) {
             // 如果URL无法访问，则抛出运行时异常。
@@ -100,12 +100,10 @@ public class SettingServiceImpl implements SettingService {
     }
 
 
-
-
     @Override
     public ResponseResult<Object> getServerUrl() {
         List<SandBoxSetting> sandBoxSettings = sandBoxSettingMapper.selectList(null);
-        return  ResponseResult.ok(sandBoxSettings);
+        return ResponseResult.ok(sandBoxSettings);
     }
 
     @Override
@@ -120,5 +118,33 @@ public class SettingServiceImpl implements SettingService {
             return ResponseResult.failResponse("sid格式错误-" + l);
         }
         return ResponseResult.ok(sandBoxSettingMapper.delete(lambda));
+    }
+
+    @Override
+    public ResponseResult<Object> onlineServer(String sid) {
+        LambdaQueryWrapper<SandBoxSetting> lambda = new QueryWrapper<SandBoxSetting>().lambda();
+        lambda.eq(SandBoxSetting::getId, sid);
+        SandBoxSetting sandBoxSetting = sandBoxSettingMapper.selectOne(lambda);
+        if (sandBoxSetting != null) {
+            checkServerUrl(sandBoxSetting.getBaseUrl());
+            sandBoxSetting.setState(1);
+            sandBoxSettingMapper.updateById(sandBoxSetting);
+            return ResponseResult.ok("上线成功");
+
+        }
+        return ResponseResult.failResponse(sid + "服务不存在");
+    }
+
+    @Override
+    public ResponseResult<Object> offlineServer(String sid) {
+        LambdaQueryWrapper<SandBoxSetting> lambda = new QueryWrapper<SandBoxSetting>().lambda();
+        lambda.eq(SandBoxSetting::getId, sid);
+        SandBoxSetting sandBoxSetting = sandBoxSettingMapper.selectOne(lambda);
+        if (sandBoxSetting != null) {
+            sandBoxSetting.setState(0);
+            sandBoxSettingMapper.updateById(sandBoxSetting);
+            return ResponseResult.ok("下线成功");
+        }
+        return ResponseResult.failResponse(sid + "服务不存在");
     }
 }

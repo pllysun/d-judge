@@ -11,4 +11,8 @@ public interface SettingService {
     ResponseResult<Object> getServerUrl();
 
     ResponseResult<Object> deleteServerUrl(String sid);
+
+    ResponseResult<Object> onlineServer(String sid);
+
+    ResponseResult<Object> offlineServer(String sid);
 }

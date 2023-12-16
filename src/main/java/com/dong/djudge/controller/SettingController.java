@@ -22,16 +22,18 @@ public class SettingController {
 
     /**
      * 添加沙盒服务器
+     *
      * @param sandBoxSettingDTO 服务器URL
      * @return 添加结果
      */
     @PostMapping("/server_url")
     public ResponseResult<Object> serverUrl(@RequestBody SandBoxSettingDTO sandBoxSettingDTO) {
-       return settingService.postServerUrl(sandBoxSettingDTO);
+        return settingService.postServerUrl(sandBoxSettingDTO);
     }
 
     /**
      * 获取沙盒服务器列表
+     *
      * @return 沙盒服务器列表
      */
     @GetMapping("/server_url")
@@ -41,12 +43,35 @@ public class SettingController {
 
     /**
      * 删除沙盒服务器
+     *
      * @param sid 服务器id
      * @return 删除结果
      */
     @DeleteMapping("/server_url")
     public ResponseResult<Object> deleteServerUrl(@RequestParam String sid) {
         return settingService.deleteServerUrl(sid);
+    }
+
+    /**
+     * 上线服务器
+     *
+     * @param sid 服务器id
+     * @return 上线结果
+     */
+    @GetMapping("/online_server")
+    public ResponseResult<Object> onlineServer(@RequestParam String sid) {
+        return settingService.onlineServer(sid);
+    }
+
+    /**
+     * 下线服务器
+     *
+     * @param sid 服务器id
+     * @return 下线结果
+     */
+    @GetMapping("/offline_server")
+    public ResponseResult<Object> offlineServer(@RequestParam String sid) {
+        return settingService.offlineServer(sid);
     }
 
 }

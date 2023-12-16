@@ -5,7 +5,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dong.djudge.entity.setting.CpuAndMemoryEntity;
 import com.dong.djudge.mapper.SandBoxSettingMapper;
+import com.dong.djudge.mapper.SystemMessageMapper;
 import com.dong.djudge.pojo.SandBoxSetting;
+import com.dong.djudge.pojo.SystemMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Component
@@ -21,16 +25,21 @@ public class ScheduledConfig {
     @Autowired
     private SandBoxSettingMapper sandBoxSettingMapper;
     @Autowired
+    private SystemMessageMapper systemMessageMapper;
+    @Autowired
     private RestTemplate restTemplate;
 
-    @Scheduled(fixedRate = 10000)
+    /**
+     * 定期检查沙盒状态。
+     * 每30秒执行一次，从数据库获取沙盒设置列表，并对每个沙盒执行状态检查和评分。
+     */
+    @Scheduled(fixedRate = 30000)
     public void checkSandboxState() {
         // 从数据库获取沙盒设置列表
         List<SandBoxSetting> sandBoxSettings = sandBoxSettingMapper.selectList(null);
         for (SandBoxSetting sandBoxSetting : sandBoxSettings) {
             Thread.startVirtualThread(() -> {
-
-                // 如果沙盒设置级别为-1，则跳过当前迭代，也就是说，当级别为-1，只能通过手动设置级别来重新启动沙盒
+                // 如果沙盒设置级别为-1，则跳过当前迭代
                 if (sandBoxSetting.getLevel() == -1) {
                     return;
                 }
@@ -43,7 +52,7 @@ public class ScheduledConfig {
                 // 获取CPU和内存信息，并计算分数
                 CpuAndMemoryEntity cpuAndMemoryEntity = fetchCpuAndMemoryEntity(sandBoxSetting.getBaseUrl());
                 if (cpuAndMemoryEntity != null) {
-                    log.info("url:{}, cpu:{},memory:{}", sandBoxSetting.getBaseUrl(), cpuAndMemoryEntity.getCpu(), cpuAndMemoryEntity.getMemory());
+                    systemMessageMapper.insert(new SystemMessage(cpuAndMemoryEntity.getCpu(), cpuAndMemoryEntity.getMemory()));
                     grades = calculateGradesBasedOnValue(Double.parseDouble(cpuAndMemoryEntity.getCpu()), grades);
                     grades = calculateGradesBasedOnValue(Double.parseDouble(cpuAndMemoryEntity.getMemory()), grades);
                 } else {
@@ -58,10 +67,14 @@ public class ScheduledConfig {
                 sandBoxSettingMapper.update(sandBoxSetting, lambda);
                 log.info("沙盒服务器地址：{}，分数：{}，级别：{}，状态：{}，频率：{}", sandBoxSetting.getBaseUrl(), grades, sandBoxSetting.getLevel(), sandBoxSetting.getState(), sandBoxSetting.getFrequency());
             });
-
         }
     }
 
+    /**
+     * 测量给定基础URL的响应时间。
+     * @param baseUrl 基础URL。
+     * @return 响应时间（毫秒）。
+     */
     private long measureResponseTime(String baseUrl) {
         long startTime = System.currentTimeMillis();
         try {
@@ -75,6 +88,13 @@ public class ScheduledConfig {
         return endTime - startTime;
     }
 
+    /**
+     * 根据响应时间计算分数。
+     * @param duration 响应时间。
+     * @param sandBoxSetting 沙盒设置。
+     * @param grades 当前分数。
+     * @return 更新后的分数。
+     */
     private Integer calculateGradesBasedOnDuration(long duration, SandBoxSetting sandBoxSetting, int grades) {
         if (duration <= 1000) {
             grades--;
@@ -92,6 +112,11 @@ public class ScheduledConfig {
         return grades;
     }
 
+    /**
+     * 从给定的基础URL获取CPU和内存信息。
+     * @param baseUrl 基础URL。
+     * @return CpuAndMemoryEntity对象，包含CPU和内存信息。
+     */
     private CpuAndMemoryEntity fetchCpuAndMemoryEntity(String baseUrl) {
         try {
             // 发送HTTP请求并获取响应
@@ -103,6 +128,12 @@ public class ScheduledConfig {
         }
     }
 
+    /**
+     * 根据CPU或内存值计算分数。
+     * @param value CPU或内存值。
+     * @param grades 当前分数。
+     * @return 更新后的分数。
+     */
     private Integer calculateGradesBasedOnValue(double value, Integer grades) {
         int caseValue = (int) (value);
         if (caseValue < 10) {
@@ -127,6 +158,12 @@ public class ScheduledConfig {
         return grades;
     }
 
+    /**
+     * 根据分数调整沙盒设置的级别。
+     * @param sandBoxSetting 沙盒设置。
+     * @param grades 分数。
+     * @return 更新后的分数。
+     */
     private Integer adjustSandBoxSettingLevel(SandBoxSetting sandBoxSetting, Integer grades) {
         Integer level = sandBoxSetting.getLevel();
         if (grades <= 5) {
@@ -156,6 +193,10 @@ public class ScheduledConfig {
         return grades;
     }
 
+    /**
+     * 根据频率调整沙盒设置的状态。
+     * @param sandBoxSetting 沙盒设置。
+     */
     private void adjustSandBoxSettingState(SandBoxSetting sandBoxSetting) {
         Integer frequency = sandBoxSetting.getFrequency();
         // 如果频率在特定范围内，调整级别和状态
@@ -171,6 +212,19 @@ public class ScheduledConfig {
             log.warn("沙盒服务器地址：{} 停止服务", sandBoxSetting.getBaseUrl());
         }
     }
+
+    /**
+     * 定期清理CPU和内存消息。
+     * 每天午夜执行，删除创建时间早于当前时间30天的SystemMessage记录。
+     */
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void clearCpuAndMemoryMessage() {
+        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
+        LambdaQueryWrapper<SystemMessage> lambda = new QueryWrapper<SystemMessage>().lambda();
+        lambda.lt(SystemMessage::getCreateTime, thirtyDaysAgo);
+        systemMessageMapper.delete(lambda);
+    }
+
 
 
 }

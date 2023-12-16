@@ -30,6 +30,7 @@ public class SqliteConfig {
         jdbcTemplate.update(createSandboxSetting());
         jdbcTemplate.update(createSandboxRun());
         jdbcTemplate.update(createSetting());
+        jdbcTemplate.update(createSystemMessage());
         List<Map<String, Object>> maps = jdbcTemplate.queryForList("SELECT * FROM test_group");
         log.info(Arrays.toString(maps.toArray()));
     }
