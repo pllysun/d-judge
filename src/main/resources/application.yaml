@@ -5,7 +5,9 @@ spring:
     username:
     password:
   thymeleaf:
-    check-template-location: false
+    mode: HTML
+    cache: false
+    prefix: classpath:/templates/
 # slf4j日志配置
 logging:
   config: classpath:logback.xml

@@ -106,8 +106,7 @@ public class SqliteConfig {
                     cpu VARCHAR(32) NOT NULL,
                     memory VARCHAR(32) NOT NULL,
                     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    UNIQUE (key)
+                    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
                 """;
     }
