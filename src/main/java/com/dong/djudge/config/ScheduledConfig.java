@@ -30,6 +30,11 @@ public class ScheduledConfig {
     private RestTemplate restTemplate;
 
     /**
+     * CPU获取的等待时间，取这个时间内的均值作为cpu的占用率，单位ms
+     */
+    private static final Integer cpuWaitTime=3000;
+
+    /**
      * 定期检查沙盒状态。
      * 每30秒执行一次，从数据库获取沙盒设置列表，并对每个沙盒执行状态检查和评分。
      */
@@ -96,15 +101,15 @@ public class ScheduledConfig {
      * @return 更新后的分数。
      */
     private Integer calculateGradesBasedOnDuration(long duration, SandBoxSetting sandBoxSetting, int grades) {
-        if (duration <= 1000) {
+        if (duration <= 1000+cpuWaitTime) {
             grades--;
-        } else if (duration <= 3000) {
+        } else if (duration <= 3000+cpuWaitTime) {
             grades += 2;
-        } else if (duration <= 5000) {
+        } else if (duration <= 5000+cpuWaitTime) {
             grades += 3;
-        } else if (duration <= 10000) {
+        } else if (duration <= 10000+cpuWaitTime) {
             grades += 4;
-        } else if (duration <= 30000) {
+        } else if (duration <= 30000+cpuWaitTime) {
             grades += 5;
         } else {
             grades += 6;

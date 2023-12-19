@@ -73,5 +73,6 @@ public class SettingController {
     public ResponseResult<Object> offlineServer(@RequestParam String sid) {
         return settingService.offlineServer(sid);
     }
+    
 
 }
