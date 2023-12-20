@@ -73,6 +73,16 @@ public class SettingController {
     public ResponseResult<Object> offlineServer(@RequestParam String sid) {
         return settingService.offlineServer(sid);
     }
-    
+
+    /**
+     * 获取系统信息
+     * @param sid
+     * @return
+     */
+    @GetMapping("/systemInfo")
+    public ResponseResult<Object> systemInfo(@RequestParam String sid) {
+        return settingService.systemInfo(sid);
+    }
+
 
 }

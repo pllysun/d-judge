@@ -6,8 +6,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dong.djudge.dto.SandBoxSettingDTO;
 import com.dong.djudge.mapper.SandBoxSettingMapper;
 import com.dong.djudge.mapper.SettingMapper;
+import com.dong.djudge.mapper.SystemMessageMapper;
 import com.dong.djudge.pojo.SandBoxSetting;
 import com.dong.djudge.pojo.Setting;
+import com.dong.djudge.pojo.SystemMetricsPojo;
 import com.dong.djudge.service.SettingService;
 import com.dong.djudge.util.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,21 +17,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class SettingServiceImpl implements SettingService {
 
-    @Autowired
-    private SettingMapper settingMapper;
 
     @Autowired
     private SandBoxSettingMapper sandBoxSettingMapper;
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private SystemMessageMapper systemMessageMapper;
 
     /**
      * 该方法用于为沙盒环境设置服务器URL。
@@ -147,4 +150,32 @@ public class SettingServiceImpl implements SettingService {
         }
         return ResponseResult.failResponse(sid + "服务不存在");
     }
+
+    @Override
+    public ResponseResult<Object> systemInfo(String sid) {
+        List<SystemMetricsPojo> smList;
+        if (sid == null || sid.isEmpty()) {
+            return ResponseResult.failResponse("sid不能为空");
+        } else {
+            LambdaQueryWrapper<SystemMetricsPojo> lambda = new QueryWrapper<SystemMetricsPojo>().lambda();
+            lambda.eq(SystemMetricsPojo::getSandboxSettingId, sid);
+            smList = systemMessageMapper.selectList(lambda);
+        }
+
+        // 设置时区为中国时区 UTC+8
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        formatter.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+
+        List<SystemMetricsPojo> sortedSmList = smList.stream()
+                .sorted(Comparator.comparing(SystemMetricsPojo::getCreateTime))
+                .peek(sm -> {
+                    // 格式化 createTime 和 updateTime
+                    sm.setCreateTimeFormatted(formatter.format(sm.getCreateTime()));
+                    sm.setUpdateTimeFormatted(formatter.format(sm.getUpdateTime()));
+                })
+                .collect(Collectors.toList());
+
+        return ResponseResult.ok(sortedSmList);
+    }
+
 }

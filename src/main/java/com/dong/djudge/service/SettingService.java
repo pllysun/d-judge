@@ -15,4 +15,9 @@ public interface SettingService {
     ResponseResult<Object> onlineServer(String sid);
 
     ResponseResult<Object> offlineServer(String sid);
+
+
+    ResponseResult<Object> systemInfo(String sid);
+
+
 }

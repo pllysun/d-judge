@@ -3,11 +3,11 @@ package com.dong.djudge.config;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.dong.djudge.entity.setting.CpuAndMemoryEntity;
+import com.dong.djudge.entity.setting.SystemMetrics;
 import com.dong.djudge.mapper.SandBoxSettingMapper;
 import com.dong.djudge.mapper.SystemMessageMapper;
 import com.dong.djudge.pojo.SandBoxSetting;
-import com.dong.djudge.pojo.SystemMessage;
+import com.dong.djudge.pojo.SystemMetricsPojo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Component
@@ -32,13 +31,13 @@ public class ScheduledConfig {
     /**
      * CPU获取的等待时间，取这个时间内的均值作为cpu的占用率，单位ms
      */
-    private static final Integer cpuWaitTime=3000;
-
+    private static final Integer cpuWaitTime=1000;
+    ResponseEntity<String> response;
     /**
      * 定期检查沙盒状态。
      * 每30秒执行一次，从数据库获取沙盒设置列表，并对每个沙盒执行状态检查和评分。
      */
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedRate = 60000)
     public void checkSandboxState() {
         // 从数据库获取沙盒设置列表
         List<SandBoxSetting> sandBoxSettings = sandBoxSettingMapper.selectList(null);
@@ -55,11 +54,13 @@ public class ScheduledConfig {
                 grades = calculateGradesBasedOnDuration(duration, sandBoxSetting, grades);
 
                 // 获取CPU和内存信息，并计算分数
-                CpuAndMemoryEntity cpuAndMemoryEntity = fetchCpuAndMemoryEntity(sandBoxSetting.getBaseUrl());
+                SystemMetrics cpuAndMemoryEntity = fetchCpuAndMemoryEntity();
                 if (cpuAndMemoryEntity != null) {
-                    systemMessageMapper.insert(new SystemMessage(cpuAndMemoryEntity.getCpu(), cpuAndMemoryEntity.getMemory()));
-                    grades = calculateGradesBasedOnValue(Double.parseDouble(cpuAndMemoryEntity.getCpu()), grades);
-                    grades = calculateGradesBasedOnValue(Double.parseDouble(cpuAndMemoryEntity.getMemory()), grades);
+                    SystemMetricsPojo systemMetricsPojo = new SystemMetricsPojo(cpuAndMemoryEntity,sandBoxSetting.getId());
+                    systemMessageMapper.insert(systemMetricsPojo);
+                    // 假设 'cpu' 和 'memory' 是 SystemMetrics 中的字段
+                    grades = calculateGradesBasedOnValue(Double.parseDouble(String.valueOf(cpuAndMemoryEntity.getCpuTotalUsage())), grades);
+                    grades = calculateGradesBasedOnValue(Double.parseDouble(String.valueOf(cpuAndMemoryEntity.getMemoryUsagePercent())), grades);
                 } else {
                     grades += 30;
                 }
@@ -84,7 +85,7 @@ public class ScheduledConfig {
         long startTime = System.currentTimeMillis();
         try {
             // 发送HTTP请求并获取响应
-            ResponseEntity<String> response = restTemplate.getForEntity(baseUrl + "/checkInfo", String.class);
+             response = restTemplate.getForEntity(baseUrl + "/checkInfo", String.class);
         } catch (Exception e) {
             // 异常处理，可以记录日志或者返回一个默认值
             return Long.MAX_VALUE; // 示例中返回一个很大的数表示请求失败
@@ -118,15 +119,12 @@ public class ScheduledConfig {
     }
 
     /**
-     * 从给定的基础URL获取CPU和内存信息。
-     * @param baseUrl 基础URL。
+     * 获取CPU和内存信息。
      * @return CpuAndMemoryEntity对象，包含CPU和内存信息。
      */
-    private CpuAndMemoryEntity fetchCpuAndMemoryEntity(String baseUrl) {
+    private SystemMetrics fetchCpuAndMemoryEntity() {
         try {
-            // 发送HTTP请求并获取响应
-            ResponseEntity<String> response = restTemplate.getForEntity(baseUrl + "/checkInfo", String.class);
-            return JSON.parseObject(response.getBody(), CpuAndMemoryEntity.class);
+            return JSON.parseObject(response.getBody(), SystemMetrics.class);
         } catch (Exception e) {
             // 异常处理，可以记录日志或者返回null
             return null;
@@ -225,8 +223,8 @@ public class ScheduledConfig {
     @Scheduled(cron = "0 0 0 * * ?")
     public void clearCpuAndMemoryMessage() {
         LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
-        LambdaQueryWrapper<SystemMessage> lambda = new QueryWrapper<SystemMessage>().lambda();
-        lambda.lt(SystemMessage::getCreateTime, thirtyDaysAgo);
+        LambdaQueryWrapper<SystemMetricsPojo> lambda = new QueryWrapper<SystemMetricsPojo>().lambda();
+        lambda.lt(SystemMetricsPojo::getCreateTime, thirtyDaysAgo);
         systemMessageMapper.delete(lambda);
     }
 

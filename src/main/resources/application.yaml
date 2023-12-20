@@ -1,3 +1,6 @@
+server:
+  port: 8080
+
 spring:
   datasource:
     driver-class-name: org.sqlite.JDBC
@@ -11,7 +14,6 @@ spring:
 # slf4j日志配置
 logging:
   config: classpath:logback.xml
-
 
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml

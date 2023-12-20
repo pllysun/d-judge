@@ -30,7 +30,7 @@ public class SqliteConfig {
         jdbcTemplate.update(createSandboxSetting());
         jdbcTemplate.update(createSandboxRun());
         jdbcTemplate.update(createSetting());
-        jdbcTemplate.update(createSystemMessage());
+        jdbcTemplate.update(createSystemMetricsTable());
         List<Map<String, Object>> maps = jdbcTemplate.queryForList("SELECT * FROM test_group");
         log.info(Arrays.toString(maps.toArray()));
     }
@@ -58,7 +58,7 @@ public class SqliteConfig {
     }
 
 
-    private String createSandboxSetting(){
+    private String createSandboxSetting() {
         return """
                 CREATE TABLE IF NOT EXISTS sandbox_setting (
                     id BIGINT PRIMARY KEY,
@@ -73,7 +73,7 @@ public class SqliteConfig {
                 """;
     }
 
-    private String createSandboxRun(){
+    private String createSandboxRun() {
         return """
                 CREATE TABLE IF NOT EXISTS sandbox_run (
                     id BIGINT PRIMARY KEY,
@@ -86,7 +86,7 @@ public class SqliteConfig {
                 """;
     }
 
-    private String createSetting(){
+    private String createSetting() {
         return """
                 CREATE TABLE IF NOT EXISTS setting (
                     id BIGINT PRIMARY KEY,
@@ -99,15 +99,27 @@ public class SqliteConfig {
                 """;
     }
 
-    private String createSystemMessage(){
+    private String createSystemMetricsTable() {
         return """
-                CREATE TABLE IF NOT EXISTS system_message (
-                    id BIGINT PRIMARY KEY,
-                    cpu VARCHAR(32) NOT NULL,
-                    memory VARCHAR(32) NOT NULL,
-                    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                );
+                    CREATE TABLE IF NOT EXISTS system_metrics (
+                          id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                          SandboxSetting_id BIGINT NOT NULL,
+                          cpu_core_usage VARCHAR(255), -- 存储为 JSON 格式的字符串
+                          cpu_logical_cores INT,
+                          cpu_physical_cores INT,
+                          cpu_total_usage DOUBLE,
+                          disk_read_kbps DOUBLE,
+                          disk_write_kbps DOUBLE,
+                          memory_total_mb DOUBLE,
+                          memory_usage_percent DOUBLE,
+                          memory_used_mb DOUBLE,
+                          network_download_mbps DOUBLE,
+                          network_upload_mbps DOUBLE,
+                          create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                          update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                      );
+                                        
                 """;
     }
+
 }
