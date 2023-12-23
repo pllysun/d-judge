@@ -20,4 +20,9 @@ public interface SettingService {
     ResponseResult<Object> systemInfo(String sid);
 
 
+    ResponseResult<Object> serverInfo();
+
+    ResponseResult<Object> editServerName(String sid, String name);
+
+    ResponseResult<Object> systemConfigInfo(String sid);
 }

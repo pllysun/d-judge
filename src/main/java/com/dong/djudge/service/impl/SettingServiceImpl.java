@@ -1,9 +1,12 @@
 package com.dong.djudge.service.impl;
 
+import cn.hutool.core.date.DateField;
+import cn.hutool.core.date.DateTime;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dong.djudge.dto.SandBoxSettingDTO;
+import com.dong.djudge.entity.setting.SystemConfig;
 import com.dong.djudge.mapper.SandBoxSettingMapper;
 import com.dong.djudge.mapper.SettingMapper;
 import com.dong.djudge.mapper.SystemMessageMapper;
@@ -18,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,7 +68,13 @@ public class SettingServiceImpl implements SettingService {
         }
         // 使用给定URL创建新的沙盒设置。
         SandBoxSetting sandBoxSetting = new SandBoxSetting(url);
+        if(sandBoxSettingDTO.getName()!=null&&!sandBoxSettingDTO.getName().isEmpty()){
+            sandBoxSetting.setName(sandBoxSettingDTO.getName());
+        }else{
+            int size = sandBoxSettings.size();
 
+            sandBoxSetting.setName(size+"号服务器");
+        }
         // 将新沙盒设置插入数据库。
         sandBoxSettingMapper.insert(sandBoxSetting);
 
@@ -157,25 +168,73 @@ public class SettingServiceImpl implements SettingService {
         if (sid == null || sid.isEmpty()) {
             return ResponseResult.failResponse("sid不能为空");
         } else {
-            LambdaQueryWrapper<SystemMetricsPojo> lambda = new QueryWrapper<SystemMetricsPojo>().lambda();
-            lambda.eq(SystemMetricsPojo::getSandboxSettingId, sid);
-            smList = systemMessageMapper.selectList(lambda);
+
+            DateTime now = DateTime.now();
+            DateTime elevenHoursAgo = now.offset(DateField.HOUR, -11);
+            String time = elevenHoursAgo.toString("yyyy-MM-dd HH:mm:ss");
+            smList = systemMessageMapper.selectMetricsAfterDate(time);
         }
 
         // 设置时区为中国时区 UTC+8
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         formatter.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
 
-        List<SystemMetricsPojo> sortedSmList = smList.stream()
+        Instant now = Instant.now();
+        Instant threeHoursAgo = now.minus(3, ChronoUnit.HOURS);
+
+        List<SystemMetricsPojo> sortedAndFilteredSmList = smList.stream()
                 .sorted(Comparator.comparing(SystemMetricsPojo::getCreateTime))
                 .peek(sm -> {
                     // 格式化 createTime 和 updateTime
                     sm.setCreateTimeFormatted(formatter.format(sm.getCreateTime()));
                     sm.setUpdateTimeFormatted(formatter.format(sm.getUpdateTime()));
                 })
+                .filter(sm -> sm.getCreateTime().toInstant().isAfter(threeHoursAgo))
                 .collect(Collectors.toList());
 
-        return ResponseResult.ok(sortedSmList);
+
+        return ResponseResult.ok(sortedAndFilteredSmList);
     }
 
+    @Override
+    public ResponseResult<Object> serverInfo() {
+        return ResponseResult.ok(sandBoxSettingMapper.selectList(null));
+    }
+
+    @Override
+    public ResponseResult<Object> editServerName(String sid, String name) {
+        if(name==null||name.isEmpty()){
+            return ResponseResult.failResponse("服务器名为空");
+        }
+        if(sid==null||sid.isEmpty()){
+            return ResponseResult.failResponse("服务器ID为空");
+        }
+        if(name.length()>12){
+            return ResponseResult.failResponse("服务器名过长,最长为12个字符");
+        }
+        LambdaQueryWrapper<SandBoxSetting> lambda = new QueryWrapper<SandBoxSetting>().lambda();
+        lambda.eq(SandBoxSetting::getId, sid);
+        SandBoxSetting sandBoxSetting = sandBoxSettingMapper.selectOne(lambda);
+        if (sandBoxSetting != null) {
+            sandBoxSetting.setName(name);
+            sandBoxSettingMapper.updateById(sandBoxSetting);
+            return ResponseResult.ok("修改成功");
+        }else{
+            return ResponseResult.failResponse("服务器不存在");
+        }
+    }
+
+    @Override
+    public ResponseResult<Object> systemConfigInfo(String sid) {
+        LambdaQueryWrapper<SandBoxSetting> lambda = new QueryWrapper<SandBoxSetting>().lambda();
+        lambda.eq(SandBoxSetting::getId, sid);
+        SandBoxSetting sandBoxSetting = sandBoxSettingMapper.selectOne(lambda);
+        SystemConfig systemConfig = new SystemConfig();
+        systemConfig.setName(sandBoxSetting.getName());
+        systemConfig.setBaseUrl(sandBoxSetting.getBaseUrl());
+        systemConfig.setFrequency(sandBoxSetting.getFrequency());
+        systemConfig.setLevel(sandBoxSetting.getLevel());
+        systemConfig.setState(sandBoxSetting.getState());
+        return ResponseResult.ok(systemConfig);
+    }
 }

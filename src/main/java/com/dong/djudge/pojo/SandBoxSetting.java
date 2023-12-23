@@ -13,6 +13,8 @@ import java.util.Date;
 public class SandBoxSetting extends AbstractPojo {
     @TableField(value = "base_url")
     private String baseUrl;
+    @TableField(value = "name")
+    private String name;
     @TableField(value = "state")
     private Integer state;
     @TableField(value = "level")

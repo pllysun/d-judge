@@ -1,5 +1,7 @@
 package com.dong.djudge.config;
 
+import cn.hutool.core.date.DateField;
+import cn.hutool.core.date.DateTime;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -31,13 +33,13 @@ public class ScheduledConfig {
     /**
      * CPU获取的等待时间，取这个时间内的均值作为cpu的占用率，单位ms
      */
-    private static final Integer cpuWaitTime=1000;
+    private static final Integer cpuWaitTime=10000;
     ResponseEntity<String> response;
     /**
      * 定期检查沙盒状态。
      * 每30秒执行一次，从数据库获取沙盒设置列表，并对每个沙盒执行状态检查和评分。
      */
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(cron = "50 * * * * *")
     public void checkSandboxState() {
         // 从数据库获取沙盒设置列表
         List<SandBoxSetting> sandBoxSettings = sandBoxSettingMapper.selectList(null);
@@ -222,10 +224,16 @@ public class ScheduledConfig {
      */
     @Scheduled(cron = "0 0 0 * * ?")
     public void clearCpuAndMemoryMessage() {
-        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
-        LambdaQueryWrapper<SystemMetricsPojo> lambda = new QueryWrapper<SystemMetricsPojo>().lambda();
-        lambda.lt(SystemMetricsPojo::getCreateTime, thirtyDaysAgo);
-        systemMessageMapper.delete(lambda);
+        DateTime now = DateTime.now();
+        DateTime elevenHoursAgo = now.offset(DateField.HOUR, -11);
+        String time = elevenHoursAgo.toString("yyyy-MM-dd HH:mm:ss");
+        List<SystemMetricsPojo> systemMetricsPojos = systemMessageMapper.selectMetricsBeforeDate(time);
+        for (SystemMetricsPojo systemMetricsPojo : systemMetricsPojos) {
+            LambdaQueryWrapper<SystemMetricsPojo> lambda = new QueryWrapper<SystemMetricsPojo>().lambda();
+            lambda.lt(SystemMetricsPojo::getId, systemMetricsPojo.getId());
+            systemMessageMapper.delete(lambda);
+        }
+
     }
 
 

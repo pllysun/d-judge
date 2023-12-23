@@ -6,5 +6,6 @@ import lombok.Data;
 public class SandBoxSettingDTO {
 
     private String url;
+    private String name;
 
 }

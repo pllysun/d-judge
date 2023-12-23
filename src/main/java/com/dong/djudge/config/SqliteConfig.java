@@ -63,6 +63,7 @@ public class SqliteConfig {
                 CREATE TABLE IF NOT EXISTS sandbox_setting (
                     id BIGINT PRIMARY KEY,
                     base_url VARCHAR(64) NOT NULL,
+                    name VARCHAR(64),
                     state INT NOT NULL,
                     level INT NOT NULL,
                     frequency INT NOT NULL,

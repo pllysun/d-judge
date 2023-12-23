@@ -79,9 +79,25 @@ public class SettingController {
      * @param sid
      * @return
      */
-    @GetMapping("/systemInfo")
+    @GetMapping("/systemDeviceInfo")
     public ResponseResult<Object> systemInfo(@RequestParam String sid) {
         return settingService.systemInfo(sid);
+    }
+
+    @GetMapping("/systemConfigInfo")
+public ResponseResult<Object> systemConfigInfo(@RequestParam String sid) {
+        return settingService.systemConfigInfo(sid);
+    }
+
+
+    @GetMapping("/serverInfo")
+    public ResponseResult<Object> serverInfo() {
+        return settingService.serverInfo();
+    }
+
+    @PostMapping("/editServerName")
+    public ResponseResult<Object> editServerName(@RequestParam String sid,@RequestParam String name) {
+        return settingService.editServerName(sid,name);
     }
 
 
