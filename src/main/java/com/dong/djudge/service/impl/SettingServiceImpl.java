@@ -172,7 +172,7 @@ public class SettingServiceImpl implements SettingService {
             DateTime now = DateTime.now();
             DateTime elevenHoursAgo = now.offset(DateField.HOUR, -11);
             String time = elevenHoursAgo.toString("yyyy-MM-dd HH:mm:ss");
-            smList = systemMessageMapper.selectMetricsAfterDate(time);
+            smList = systemMessageMapper.selectMetricsAfterDate(time,sid);
         }
 
         // 设置时区为中国时区 UTC+8
@@ -198,7 +198,11 @@ public class SettingServiceImpl implements SettingService {
 
     @Override
     public ResponseResult<Object> serverInfo() {
-        return ResponseResult.ok(sandBoxSettingMapper.selectList(null));
+        List<SandBoxSetting> sandBoxSettings = sandBoxSettingMapper.selectList(null);
+        for (SandBoxSetting sandBoxSetting : sandBoxSettings) {
+            sandBoxSetting.setKeyId(sandBoxSetting.getId().toString());
+        }
+        return ResponseResult.ok(sandBoxSettings);
     }
 
     @Override
