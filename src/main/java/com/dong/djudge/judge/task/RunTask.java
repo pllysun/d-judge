@@ -6,8 +6,8 @@ import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dong.djudge.dto.JudgeRequest;
-import com.dong.djudge.entity.InTestCaseGroup;
 import com.dong.djudge.entity.InCaseGroupRoot;
+import com.dong.djudge.entity.InTestCaseGroup;
 import com.dong.djudge.entity.TestGroupEntity;
 import com.dong.djudge.entity.judge.RunResult;
 import com.dong.djudge.entity.judge.RunResultForTestGroup;
@@ -19,7 +19,9 @@ import com.dong.djudge.judge.LanguageConfigLoader;
 import com.dong.djudge.judge.SandboxRun;
 import com.dong.djudge.judge.entity.LanguageConfig;
 import com.dong.djudge.judge.service.RunService;
+import com.dong.djudge.mapper.SandBoxRunMapper;
 import com.dong.djudge.mapper.TestGroupMapper;
+import com.dong.djudge.pojo.SandBoxRun;
 import com.dong.djudge.util.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,16 +47,21 @@ public class RunTask {
     @Autowired
     TestGroupMapper testGroupMapper;
 
+    @Autowired
+    private SandBoxRunMapper sandBoxRunMapper;
+
     public RunResultRoot runTask(JudgeRequest request, String fileId) throws Exception {
         LanguageConfigLoader languageConfigLoader = new LanguageConfigLoader();
         //获取语言配置
         LanguageConfig languageConfigByName = languageConfigLoader.getLanguageConfigByName(request.getLanguage());
         JSONArray objects;
         RunResultRoot runResultRoot;
-        if (request.getModeType().equals(ModeEnum.OI.getName())) {
+        if (request.getModeType().equalsIgnoreCase(ModeEnum.OI.getName())) {
             objects = runService.testCase(languageConfigByName, request, fileId, request.getOiString());
             RunResult runResult = JSON.parseArray(objects.toString(), RunResult.class).get(0);
             runResultRoot = new RunResultRoot(0, 0, runResult);
+            SandBoxRun sandBoxRun = sandBoxRunMapper.selectOne(new QueryWrapper<SandBoxRun>().lambda().eq(SandBoxRun::getFileId, fileId));
+            SandboxRun.delFile(sandBoxRun.getBaseUrl(), fileId);
         } else {
 
             if (request.getStandardCode().getInputFileType().equals(InputFileEnum.JSON.getValue())) {
@@ -91,9 +98,9 @@ public class RunTask {
         try (ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor()) {
             List<Future<RunResultForTestGroup>> futures = new ArrayList<>();
             for (InCaseGroupRoot inCaseGroupRoot : CommonUtils.getInTestGroupForJson(request.getStandardCode().getInputFileContext())) {
-                Integer gid= inCaseGroupRoot.getGid();
+                Integer gid = inCaseGroupRoot.getGid();
                 for (InTestCaseGroup inTestCaseGroup : inCaseGroupRoot.getInput()) {
-                    Integer id= inTestCaseGroup.getId();
+                    Integer id = inTestCaseGroup.getId();
                     Callable<RunResultForTestGroup> task = () -> {
                         // 执行任务，这里简单返回一个字符串
                         JSONArray finalObjects = runService.testCase(languageConfigByName, request, fileId, inTestCaseGroup.getValue());
@@ -121,9 +128,11 @@ public class RunTask {
             runResultRoot.setRunResult(list);
             executorService.shutdown();
             //运行完毕删除沙盒里面的文件
-            SandboxRun.delFile(fileId);
+            SandBoxRun sandBoxRun = sandBoxRunMapper.selectOne(new QueryWrapper<SandBoxRun>().lambda().eq(SandBoxRun::getFileId, fileId));
+            SandboxRun.delFile(sandBoxRun.getBaseUrl(), fileId);
         } catch (CancellationException e) {
-            SandboxRun.delFile(fileId);
+            SandBoxRun sandBoxRun = sandBoxRunMapper.selectOne(new QueryWrapper<SandBoxRun>().lambda().eq(SandBoxRun::getFileId, fileId));
+            SandboxRun.delFile(sandBoxRun.getBaseUrl(), fileId);
             log.warn("任务取消:{}", e.getMessage());
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);

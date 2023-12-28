@@ -8,14 +8,24 @@ import com.dong.djudge.exception.SystemException;
 import com.dong.djudge.judge.SandboxRun;
 import com.dong.djudge.judge.entity.LanguageConfig;
 import com.dong.djudge.judge.service.CompilerService;
+import com.dong.djudge.mapper.SandBoxRunMapper;
+import com.dong.djudge.mapper.SandBoxSettingMapper;
+import com.dong.djudge.pojo.SandBoxRun;
+import com.dong.djudge.pojo.SandBoxSetting;
 import com.dong.djudge.util.Constants;
 import com.dong.djudge.util.JudgeUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * @author 阿东
@@ -32,6 +42,10 @@ public class CompilerServiceImpl implements CompilerService {
      * 最大内存 100M
      */
     Long maxMemory = 104857600L;
+    @Autowired
+    private SandBoxSettingMapper sandBoxSettingMapper;
+    @Autowired
+    private SandBoxRunMapper sandBoxRunMapper;
 
     static List<String> parseCompileCommand(String command) {
         return JudgeUtils.translateCommandline(command);
@@ -56,9 +70,11 @@ public class CompilerServiceImpl implements CompilerService {
         if (languageConfig == null) {
             throw new RuntimeException("Unsupported language " + language);
         }
-
+        SandBoxSetting sandboxBaseUrl = getSandboxBaseUrl();
         // 调用安全沙箱的compile方法进行编译
-        JSONArray result = SandboxRun.compile(languageConfig.getMaxCpuTime(),
+        JSONArray result = SandboxRun.compile(
+                sandboxBaseUrl.getBaseUrl(),
+                languageConfig.getMaxCpuTime(),
                 languageConfig.getMaxRealTime() == null ? maxTime : languageConfig.getMaxRealTime(),
                 languageConfig.getMaxMemory() == null ? maxMemory : languageConfig.getMaxMemory(),
                 256 * 1024 * 1024L,
@@ -91,8 +107,47 @@ public class CompilerServiceImpl implements CompilerService {
             throw new SubmitException("Executable file not found.", ((JSONObject) compileResult.get("files")).getStr("stdout"),
                     ((JSONObject) compileResult.get("files")).getStr("stderr"));
         }
-
+        sandBoxRunMapper.insert(new SandBoxRun(fileId, sandboxBaseUrl.getBaseUrl()));
         // 返回可执行文件的文件ID
         return fileId;
+    }
+
+    public SandBoxSetting getSandboxBaseUrl() throws SystemException {
+        List<SandBoxSetting> sandBoxSettings = sandBoxSettingMapper.selectList(null);
+        if (sandBoxSettings.isEmpty()) {
+            throw new SystemException("没有可用代码沙盒服务", "", "");
+        }
+        Map<Long, String> url = new HashMap<>();
+        List<SandBoxSetting> list = new ArrayList<>();
+        for (SandBoxSetting sandBoxSetting : sandBoxSettings) {
+            if (sandBoxSetting.getState() == 1) {
+                url.put(sandBoxSetting.getId(), sandBoxSetting.getBaseUrl());
+                list.add(sandBoxSetting);
+            }
+        }
+        int sum = 0;
+        int level = 0;
+        Map<Long, Set<Integer>> map = new HashMap<>();
+        for (SandBoxSetting sandBoxSetting : list) {
+            Long id = sandBoxSetting.getId();
+            Set<Integer> set = new HashSet<>();
+            for (int i = 0; i < sandBoxSetting.getLevel(); i++) {
+                set.add(level);
+                level++;
+            }
+            map.put(id, set);
+            sum += sandBoxSetting.getLevel();
+        }
+        Random random = new Random();
+        int i = random.nextInt(sum);
+        for (Map.Entry<Long, Set<Integer>> entry : map.entrySet()) {
+            if (entry.getValue().contains(i)) {
+                SandBoxSetting sandBoxSetting = new SandBoxSetting();
+                sandBoxSetting.setId(entry.getKey());
+                sandBoxSetting.setBaseUrl(url.get(entry.getKey()));
+                return sandBoxSetting;
+            }
+        }
+        throw new SystemException("分配服务器出错", "随机到的数为:" + i + ",最大值为:" + sum, "");
     }
 }

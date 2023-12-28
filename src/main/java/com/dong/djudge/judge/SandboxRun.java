@@ -116,10 +116,9 @@ public class SandboxRun {
         return SANDBOX_BASE_URL;
     }
 
-    public static void delFile(String fileId) {
-
+    public static void delFile(String url,String fileId) {
         try {
-            restTemplate.delete(SANDBOX_BASE_URL + "/file/{0}", fileId);
+            restTemplate.delete(url + "/file/{0}", fileId);
         } catch (RestClientResponseException ex) {
             if (ex.getStatusCode() != HttpStatusCode.valueOf(200)) {
                 log.error("安全沙箱判题的删除内存中的文件缓存操作异常----------------->{}", ex.getResponseBodyAsString());
@@ -147,7 +146,8 @@ public class SandboxRun {
      * @Return
      * @Since 2022/1/3
      */
-    public static JSONArray compile(Long maxCpuTime,
+    public static JSONArray compile(String url,
+                                    Long maxCpuTime,
                                     Long maxRealTime,
                                     Long maxMemory,
                                     Long maxStack,
@@ -202,7 +202,7 @@ public class SandboxRun {
         JSONObject param = new JSONObject();
         param.set("cmd", new JSONArray().put(cmd));
 
-        JSONArray result = instance.run("/run", param);
+        JSONArray result = instance.run("/run", param, url);
         JSONObject compileRes = (JSONObject) result.get(0);
         compileRes.set("originalStatus", compileRes.getStr("status"));
         compileRes.set("status", RESULT_MAP_STATUS.get(compileRes.getStr("status")));
@@ -224,7 +224,8 @@ public class SandboxRun {
      * @Return JSONArray
      * @Since 2022/1/3
      */
-    public static JSONArray testCase(List<String> args,
+    public static JSONArray testCase(String url,
+                                     List<String> args,
                                      List<String> envs,
                                      Integer maxTime,
                                      Integer maxMemory,
@@ -248,7 +249,7 @@ public class SandboxRun {
         if (BooleanUtils.isFalse(isFileIO)) {
             JSONObject stdout = new JSONObject();
             stdout.set("name", "stdout");
-            stdout.set("max", maxOutputSize*1024);
+            stdout.set("max", maxOutputSize * 1024);
             files.put(testCaseInput);
             files.put(stdout);
         }
@@ -286,7 +287,7 @@ public class SandboxRun {
         param.set("cmd", new JSONArray().put(cmd));
 
         // 调用判题安全沙箱
-        JSONArray result = instance.run("/run", param);
+        JSONArray result = instance.run("/run", param, url);
 
         JSONObject testcaseRes = (JSONObject) result.get(0);
         testcaseRes.set("originalStatus", testcaseRes.getStr("status"));
@@ -295,8 +296,7 @@ public class SandboxRun {
     }
 
 
-
-    public JSONArray run(String uri, JSONObject param) throws SystemException {
+    public JSONArray run(String uri, JSONObject param, String url) throws SystemException {
         // 创建HttpHeaders对象并设置Content-Type为JSON
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -307,7 +307,7 @@ public class SandboxRun {
         ResponseEntity<String> postForEntity;
         try {
             // 使用RestTemplate发送POST请求，将响应结果保存在postForEntity中
-            postForEntity = restTemplate.postForEntity(SANDBOX_BASE_URL + uri, request, String.class);
+            postForEntity = restTemplate.postForEntity(url + uri, request, String.class);
 
             // 解析响应体中的JSON数组并返回
             return JSONUtil.parseArray(postForEntity.getBody());

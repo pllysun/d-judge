@@ -1,13 +1,18 @@
 package com.dong.djudge.judge.service.impl;
 
 import cn.hutool.json.JSONArray;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dong.djudge.dto.JudgeRequest;
 import com.dong.djudge.entity.judge.CodeSetting;
 import com.dong.djudge.exception.SystemException;
 import com.dong.djudge.judge.SandboxRun;
 import com.dong.djudge.judge.entity.LanguageConfig;
 import com.dong.djudge.judge.service.RunService;
+import com.dong.djudge.mapper.SandBoxRunMapper;
+import com.dong.djudge.pojo.SandBoxRun;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -39,14 +44,20 @@ public class OiRunServiceImpl implements RunService {
      */
     Integer maxOutput = 10;
 
+    @Autowired
+    private SandBoxRunMapper sandBoxRunMapper;
+
     @Override
     public JSONArray testCase(LanguageConfig languageConfig, JudgeRequest request, String fileId, String testCaseContent) throws SystemException {
         List<String> args = new ArrayList<>();
         if (request.getCodeSetting() == null) {
             request.setCodeSetting(new CodeSetting());
         }
+        LambdaQueryWrapper<SandBoxRun> lambda = new QueryWrapper<SandBoxRun>().lambda();
+        lambda.eq(SandBoxRun::getFileId, fileId);
+        SandBoxRun sandBoxRun = sandBoxRunMapper.selectOne(lambda);
         args.add(languageConfig.getRunCommand());
-        JSONArray objects = SandboxRun.testCase(args,
+        JSONArray objects = SandboxRun.testCase(sandBoxRun.getBaseUrl(), args,
                 languageConfig.getRunEnvs(),
                 request.getCodeSetting().getMaxTime() == null ? maxTime : request.getCodeSetting().getMaxTime(),
                 request.getCodeSetting().getMaxMemory() == null ? maxMemory : request.getCodeSetting().getMaxMemory(),
