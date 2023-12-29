@@ -15,6 +15,7 @@ import com.dong.djudge.pojo.Setting;
 import com.dong.djudge.pojo.SystemMetricsPojo;
 import com.dong.djudge.service.SettingService;
 import com.dong.djudge.util.ResponseResult;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class SettingServiceImpl implements SettingService {
 
 
@@ -47,9 +49,18 @@ public class SettingServiceImpl implements SettingService {
      */
     @Override
     public ResponseResult<Object> postServerUrl(SandBoxSettingDTO sandBoxSettingDTO) {
+        if(sandBoxSettingDTO.getUrl()==null||sandBoxSettingDTO.getUrl().isEmpty()){
+            return ResponseResult.failResponse("URL不能为空");
+        }
         // 验证并修改DTO中的URL。
-        String url = checkServerUrl(sandBoxSettingDTO.getUrl());
+        String url;
+        try {
+            url = checkServerUrl(sandBoxSettingDTO.getUrl());
+        } catch (RuntimeException e) {
+            return ResponseResult.failResponse(e.getMessage());
+        }
 
+        log.info("url: {}", url);
         // 检索现有的沙盒设置列表。
         List<SandBoxSetting> sandBoxSettings = sandBoxSettingMapper.selectList(null);
 
@@ -68,12 +79,12 @@ public class SettingServiceImpl implements SettingService {
         }
         // 使用给定URL创建新的沙盒设置。
         SandBoxSetting sandBoxSetting = new SandBoxSetting(url);
-        if(sandBoxSettingDTO.getName()!=null&&!sandBoxSettingDTO.getName().isEmpty()){
+        if (sandBoxSettingDTO.getName() != null && !sandBoxSettingDTO.getName().isEmpty()) {
             sandBoxSetting.setName(sandBoxSettingDTO.getName());
-        }else{
+        } else {
             int size = sandBoxSettings.size();
 
-            sandBoxSetting.setName(size+"号服务器");
+            sandBoxSetting.setName(size + "号服务器");
         }
         // 将新沙盒设置插入数据库。
         sandBoxSettingMapper.insert(sandBoxSetting);
@@ -100,6 +111,8 @@ public class SettingServiceImpl implements SettingService {
 
         } catch (Exception e) {
             // 如果URL无法访问，则抛出运行时异常。
+            log.error("沙盒服务器地址: {} 不可用", url);
+            log.error("错误信息: {}", e.getMessage());
             throw new RuntimeException("沙盒服务器地址: " + url + " 不可用");
         }
         // 检查响应状态码是否为成功（2xx）。
@@ -117,6 +130,9 @@ public class SettingServiceImpl implements SettingService {
     @Override
     public ResponseResult<Object> getServerUrl() {
         List<SandBoxSetting> sandBoxSettings = sandBoxSettingMapper.selectList(null);
+        for (SandBoxSetting sandBoxSetting : sandBoxSettings) {
+            sandBoxSetting.setKeyId(sandBoxSetting.getId().toString());
+        }
         return ResponseResult.ok(sandBoxSettings);
     }
 
@@ -131,7 +147,8 @@ public class SettingServiceImpl implements SettingService {
         } catch (Exception e) {
             return ResponseResult.failResponse("sid格式错误-" + l);
         }
-        return ResponseResult.ok(sandBoxSettingMapper.delete(lambda));
+        int delete = sandBoxSettingMapper.delete(lambda);
+        return ResponseResult.ok(delete);
     }
 
     @Override
@@ -172,7 +189,7 @@ public class SettingServiceImpl implements SettingService {
             DateTime now = DateTime.now();
             DateTime elevenHoursAgo = now.offset(DateField.HOUR, -11);
             String time = elevenHoursAgo.toString("yyyy-MM-dd HH:mm:ss");
-            smList = systemMessageMapper.selectMetricsAfterDate(time,sid);
+            smList = systemMessageMapper.selectMetricsAfterDate(time, sid);
         }
 
         // 设置时区为中国时区 UTC+8
@@ -207,13 +224,13 @@ public class SettingServiceImpl implements SettingService {
 
     @Override
     public ResponseResult<Object> editServerName(String sid, String name) {
-        if(name==null||name.isEmpty()){
+        if (name == null || name.isEmpty()) {
             return ResponseResult.failResponse("服务器名为空");
         }
-        if(sid==null||sid.isEmpty()){
+        if (sid == null || sid.isEmpty()) {
             return ResponseResult.failResponse("服务器ID为空");
         }
-        if(name.length()>12){
+        if (name.length() > 12) {
             return ResponseResult.failResponse("服务器名过长,最长为12个字符");
         }
         LambdaQueryWrapper<SandBoxSetting> lambda = new QueryWrapper<SandBoxSetting>().lambda();
@@ -223,7 +240,7 @@ public class SettingServiceImpl implements SettingService {
             sandBoxSetting.setName(name);
             sandBoxSettingMapper.updateById(sandBoxSetting);
             return ResponseResult.ok("修改成功");
-        }else{
+        } else {
             return ResponseResult.failResponse("服务器不存在");
         }
     }
