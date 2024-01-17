@@ -6,11 +6,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dong.djudge.dto.JudgeRequest;
-import com.dong.djudge.dto.standardCodeDTO;
 import com.dong.djudge.dto.UpdatestandardCodeDTO;
-import com.dong.djudge.entity.InCaseGroupRoot;
+import com.dong.djudge.dto.standardCodeDTO;
 import com.dong.djudge.entity.SaveCaseGroupRoot;
-import com.dong.djudge.entity.SaveTestCaseGroup;
 import com.dong.djudge.entity.StandardCodeEntity;
 import com.dong.djudge.entity.TestGroupEntity;
 import com.dong.djudge.entity.judge.RunResultRoot;
@@ -130,7 +128,6 @@ public class StandardCodeServiceImpl extends ServiceImpl<StandardCodeMapper, Sta
     }
 
 
-
     /**
      * 通过验证测试组、编译代码并运行任务初始化代码执行。
      * 如果出现问题，返回带有错误消息的 ResponseResult。
@@ -184,7 +181,7 @@ public class StandardCodeServiceImpl extends ServiceImpl<StandardCodeMapper, Sta
      * 返回带有生成的代码ID的 ResponseResult。
      *
      * @param standardCodeDTO 包含代码执行信息的 standardCodeDTO。
-     * @param list          表示测试用例组的 TestCaseGroupRoot 列表。
+     * @param list            表示测试用例组的 TestCaseGroupRoot 列表。
      * @return 带有生成的代码ID的 ResponseResult。
      * @throws Exception 如果在代码执行过程中发生错误。
      */

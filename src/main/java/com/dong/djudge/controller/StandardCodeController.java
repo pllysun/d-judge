@@ -1,14 +1,12 @@
 package com.dong.djudge.controller;
 
-import com.dong.djudge.dto.standardCodeDTO;
 import com.dong.djudge.dto.UpdatestandardCodeDTO;
+import com.dong.djudge.dto.standardCodeDTO;
 import com.dong.djudge.service.StandardCodeService;
 import com.dong.djudge.util.CommonUtils;
 import com.dong.djudge.util.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -76,7 +74,6 @@ public class StandardCodeController {
         }
         return CommonUtils.getObjectResponseEntity(standardCodeId, jsonContent);
     }
-
 
 
     /**

@@ -23,6 +23,8 @@ public class SandBoxSetting extends AbstractPojo {
     private Integer frequency;
     @TableField(exist = false)
     private String keyId;
+    @TableField(exist = false)
+    private String languageConfig;
 
     public SandBoxSetting(String baseUrl) {
         this.baseUrl = baseUrl;

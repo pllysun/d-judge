@@ -4,13 +4,7 @@ import com.dong.djudge.dto.SandBoxSettingDTO;
 import com.dong.djudge.service.SettingService;
 import com.dong.djudge.util.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 服务器设置
@@ -76,6 +70,7 @@ public class SettingController {
 
     /**
      * 获取系统信息
+     *
      * @param sid
      * @return
      */
@@ -85,7 +80,7 @@ public class SettingController {
     }
 
     @GetMapping("/systemConfigInfo")
-public ResponseResult<Object> systemConfigInfo(@RequestParam String sid) {
+    public ResponseResult<Object> systemConfigInfo(@RequestParam String sid) {
         return settingService.systemConfigInfo(sid);
     }
 
@@ -96,12 +91,15 @@ public ResponseResult<Object> systemConfigInfo(@RequestParam String sid) {
     }
 
     @PostMapping("/editServerName")
-    public ResponseResult<Object> editServerName(@RequestParam String sid,@RequestParam String name) {
-        return settingService.editServerName(sid,name);
+    public ResponseResult<Object> editServerName(@RequestParam String sid, @RequestParam String name) {
+        return settingService.editServerName(sid, name);
     }
 
 
-
+    @PostMapping("/getLanguageDictionary")
+    public ResponseResult<Object> getLanguageDictionary() {
+        return settingService.getLanguageDictionary();
+    }
 
 
 }

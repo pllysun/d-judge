@@ -4,6 +4,7 @@ import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.io.resource.Resource;
 import cn.hutool.core.lang.UUID;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.dong.djudge.entity.InCaseGroupRoot;
 import com.dong.djudge.entity.InTestCaseGroup;
 import com.dong.djudge.entity.OutCaseGroupRoot;
@@ -13,6 +14,7 @@ import com.dong.djudge.entity.SaveCaseGroupRoot;
 import com.dong.djudge.entity.SaveTestCaseGroup;
 import com.dong.djudge.entity.judge.RunResult;
 import com.dong.djudge.entity.judge.RunResultRoot;
+import com.dong.djudge.pojo.SandBoxSetting;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -34,10 +36,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 public class CommonUtils {
@@ -587,6 +586,13 @@ public class CommonUtils {
         }
         // 返回结果列表
         return list;
+    }
+
+    public static String getInstalledPackages(RestTemplate restTemplate, SandBoxSetting sandBoxSetting) {
+        String s = sandBoxSetting.getBaseUrl() + "/getInstallList";
+        ResponseEntity<String> forEntity = restTemplate.getForEntity(s, String.class);
+        String body = forEntity.getBody();
+        return Objects.requireNonNull(JSONObject.parseObject(body)).getString("installed_packages");
     }
 
 }
