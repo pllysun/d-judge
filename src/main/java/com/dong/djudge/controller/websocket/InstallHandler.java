@@ -114,17 +114,17 @@ public class InstallHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        System.out.println("连接到服务器");
+        log.info("安装语言环境websocket连接到服务器");
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        System.out.println("连接关闭：" + status.getReason());
+        log.info("安装语言环境websocket断开连接");
     }
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-        System.out.println("传输错误：" + exception.getMessage());
+        log.warn("连接异常", exception);
     }
 
 

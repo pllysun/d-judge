@@ -11,17 +11,6 @@ import java.net.URL;
 @SpringBootTest
 class DJudgeApplicationTests {
 
-    @Test
-    void contextLoads() {
-        Resource resource = new ClassPathResource("");
-        URL file = resource.getUrl();
-        String path = file.getPath();
-        System.out.println(path.substring(1, path.length() - 1).replace("test-classes", "").replace("target/", "") + "file/");
-    }
 
-    @Test
-    void test1() throws Exception {
-        System.out.println(CommonUtils.getFilePath());
-    }
 
 }
