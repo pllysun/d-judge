@@ -10,7 +10,6 @@ import com.dong.djudge.dto.LanguageWebSocketDTO;
 import com.dong.djudge.mapper.LanguageConfigMapper;
 import com.dong.djudge.mapper.LanguageInstallMapper;
 import com.dong.djudge.mapper.SandBoxSettingMapper;
-import com.dong.djudge.mapper.StandardCodeMapper;
 import com.dong.djudge.pojo.LanguageConfig;
 import com.dong.djudge.pojo.LanguageInstall;
 import com.dong.djudge.pojo.SandBoxSetting;
@@ -43,15 +42,15 @@ public class InstallHandler extends TextWebSocketHandler {
         try {
             languageWebSocketDTO = JSON.parseObject(message.getPayload(), LanguageWebSocketDTO.class);
         } catch (Exception e) {
-            session.sendMessage(jsonMessage("error", "JSON格式错误"));
+            session.sendMessage(jsonMessage("系统错误","error", "JSON格式错误"));
             return;
         }
         if (languageWebSocketDTO == null) {
-            session.sendMessage(jsonMessage("error", "JSON格式错误"));
+            session.sendMessage(jsonMessage("系统错误","error", "JSON格式错误"));
             return;
         }
         if (languageWebSocketDTO.getLanguageId() == null) {
-            session.sendMessage(jsonMessage("error", "languageId不能为空"));
+            session.sendMessage(jsonMessage("系统错误","error", "languageId不能为空"));
         }
         LambdaQueryWrapper<LanguageInstall> lambda = new QueryWrapper<LanguageInstall>().lambda();
         lambda.eq(LanguageInstall::getId, languageWebSocketDTO.getLanguageId());
@@ -62,7 +61,7 @@ public class InstallHandler extends TextWebSocketHandler {
         for (SandBoxSetting sandBoxSetting : sandBoxSettings) {
             String installedPackages = CommonUtils.getInstalledPackages(restTemplate, sandBoxSetting);
             if (installedPackages.contains(languageInstall.getPackageName())) {
-                session.sendMessage(jsonMessage("success", sandBoxSetting.getName() + "已安装" + languageInstall.getLanguage() + "的语言环境:" + languageInstall.getPackageName()));
+                session.sendMessage(jsonMessage(sandBoxSetting.getName(),"success", sandBoxSetting.getName() + "已安装" + languageInstall.getLanguage() + "的语言环境:" + languageInstall.getPackageName()));
                 continue;
             }
             WebSocketSession webSocketSession = getWebSocketSession(session, sandBoxSetting, languageInstall);
@@ -88,16 +87,16 @@ public class InstallHandler extends TextWebSocketHandler {
                 if (installDTO.getState().equalsIgnoreCase("end")) {
                     String installedPackages = CommonUtils.getInstalledPackages(restTemplate, sandBoxSetting);
                     if (installedPackages.contains(languageInstall.getPackageName())) {
-                        session.sendMessage(jsonMessage("success", sandBoxSetting.getName() + "安装" + languageInstall.getLanguage() + "的语言环境:" + languageInstall.getPackageName() + "已安装成功"));
+                        session.sendMessage(jsonMessage(sandBoxSetting.getName(),"success", sandBoxSetting.getName() + "安装" + languageInstall.getLanguage() + "的语言环境:" + languageInstall.getPackageName() + "已安装成功"));
                         LanguageConfig languageConfig = new LanguageConfig(sandBoxSetting.getId(), languageInstall.getId().toString());
                         languageConfigMapper.insert(languageConfig);
                     } else {
-                        session.sendMessage(jsonMessage("error", sandBoxSetting.getName() + "安装" + languageInstall.getLanguage() + "的语言环境:" + languageInstall.getPackageName() + "安装失败\n失败原因:未找到已安装的环境"));
+                        session.sendMessage(jsonMessage(sandBoxSetting.getName(),"error", sandBoxSetting.getName() + "安装" + languageInstall.getLanguage() + "的语言环境:" + languageInstall.getPackageName() + "安装失败\n失败原因:未找到已安装的环境"));
                     }
                     ses.close();
                     return;
                 }
-                session.sendMessage(jsonMessage(installDTO.getState(), installDTO.getMessage()));
+                session.sendMessage(jsonMessage(sandBoxSetting.getName(), installDTO.getState(), installDTO.getMessage()));
             }
         };
         CompletableFuture<WebSocketSession> execute = client.execute(webSocketHandler, wsUrl + "/install");
@@ -107,8 +106,8 @@ public class InstallHandler extends TextWebSocketHandler {
     }
 
 
-    private TextMessage jsonMessage(String level, String message) {
-        InstallVo installVo = new InstallVo(level, message);
+    private TextMessage jsonMessage(String name, String level, String message) {
+        InstallVo installVo = new InstallVo(name, level, message);
         String jsonString = JSON.toJSONString(installVo);
         return new TextMessage(jsonString);
     }

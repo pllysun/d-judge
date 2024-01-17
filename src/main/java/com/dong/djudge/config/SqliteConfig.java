@@ -82,28 +82,20 @@ public class SqliteConfig {
     /**
      * 监测沙盒服务器内部是否存在相关语言环境
      */
-    private void manageLanguageConfig(){
+    private void manageLanguageConfig() {
+        languageConfigMapper.delete(null);
         List<SandBoxSetting> sandBoxSettings = sandBoxSettingMapper.selectList(null);
         for (SandBoxSetting sandBoxSetting : sandBoxSettings) {
             String installedPackages = CommonUtils.getInstalledPackages(restTemplate, sandBoxSetting);
             List<LanguageInstall> languageInstalls = languageInstallMapper.selectList(null);
             for (LanguageInstall languageInstall : languageInstalls) {
-                if(installedPackages.contains(languageInstall.getPackageName())){
-                    LambdaQueryWrapper<LanguageConfig> lambda = new QueryWrapper<LanguageConfig>().lambda();
-                    lambda.eq(LanguageConfig::getLanguageId,languageInstall.getId());
-                    lambda.eq(LanguageConfig::getServerId,sandBoxSetting.getId());
-                    LanguageConfig lgc = languageConfigMapper.selectOne(lambda);
-                    if(lgc==null){
-                        LanguageConfig languageConfig = new LanguageConfig(sandBoxSetting.getId(), languageInstall.getId().toString());
-                        languageConfigMapper.insert(languageConfig);
-                    }
+                if (installedPackages.contains(languageInstall.getPackageName())) {
+                    LanguageConfig languageConfig = new LanguageConfig(sandBoxSetting.getId(), languageInstall.getId().toString());
+                    languageConfigMapper.insert(languageConfig);
                 }
             }
         }
-
     }
-
-
 
 
 }

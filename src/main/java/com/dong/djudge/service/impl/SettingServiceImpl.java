@@ -290,4 +290,10 @@ public class SettingServiceImpl implements SettingService {
         List<LanguageDictionary> languageDictionaries = languageDictionaryMapper.selectList(null);
         return ResponseResult.ok(languageDictionaries);
     }
+
+    @Override
+    public ResponseResult<Object> getLanguageInstallConfig() {
+        List<LanguageInstall> languageInstalls = languageInstallMapper.selectList(null);
+        return ResponseResult.ok(languageInstalls);
+    }
 }

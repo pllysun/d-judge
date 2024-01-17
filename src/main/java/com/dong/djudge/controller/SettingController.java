@@ -101,5 +101,10 @@ public class SettingController {
         return settingService.getLanguageDictionary();
     }
 
+    @GetMapping("/getLanguageInstallConfig")
+    public ResponseResult<Object> getLanguageInstallConfig() {
+        return settingService.getLanguageInstallConfig();
+    }
+
 
 }
