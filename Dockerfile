@@ -10,6 +10,7 @@ COPY target/d-judge-0.0.1-SNAPSHOT.jar /app/d-judge-0.0.1-SNAPSHOT.jar
 # 挂载数据库文件和日志文件目录
 VOLUME /app/db
 VOLUME /app/logs
+VOLUME /app/file
 
 # 暴露应用程序使用的端口
 EXPOSE 6005

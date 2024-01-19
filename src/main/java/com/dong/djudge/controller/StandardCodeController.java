@@ -36,7 +36,7 @@ public class StandardCodeController {
     @PostMapping("/standardCode")
     public ResponseResult<String> StandardCode(@RequestBody @Validated standardCodeDTO standardCodeDTO, BindingResult bindingResult) throws Exception {
         if (bindingResult.hasErrors()) {
-            return ResponseResult.failResponse(bindingResult.getFieldErrors().get(0).getDefaultMessage());
+            return ResponseResult.failResponse(bindingResult.getFieldErrors().getFirst().getDefaultMessage());
         }
         return standardCodeService.standardCodeRun(standardCodeDTO);
     }

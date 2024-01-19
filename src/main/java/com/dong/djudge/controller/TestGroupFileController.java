@@ -73,7 +73,7 @@ public class TestGroupFileController {
         switch (code) {
             case 0:
                 // 检查 JSON 是否有效
-                if (CommonUtils.isValidJson(testGroupFileDTO.getContent())) {
+                if (!CommonUtils.isValidJson(testGroupFileDTO.getContent())) {
                     return ResponseResult.failResponse("无效的 JSON 内容！");
                 }
                 if (isUpload) {
@@ -106,13 +106,12 @@ public class TestGroupFileController {
                     log.info("file:{}", testGroupFileDTO.getFile().getOriginalFilename());
                     // 使用 Apache Tika 检测文件类型
                     String fileType = new Tika().detect(testGroupFileDTO.getFile().getOriginalFilename());
-                    System.out.println(fileType);
                     // 检查文件类型是否为 JSON
                     if (!"application/json".equals(fileType)) {
                         return ResponseResult.failResponse("文件类型不是 JSON，请检查您的文件格式！");
                     }
                     String json = new String(testGroupFileDTO.getFile().getBytes());
-                    if (CommonUtils.isValidJson(json)) {
+                    if (!CommonUtils.isValidJson(json)) {
                         return ResponseResult.failResponse("无效的 JSON 内容！");
                     }
                     if (isUpload) {

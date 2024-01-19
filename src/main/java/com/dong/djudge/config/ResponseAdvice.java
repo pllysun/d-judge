@@ -33,18 +33,27 @@ public class ResponseAdvice {
     @ExceptionHandler(value = CompileException.class)
     public ResponseResult<String> compileExceptionHandler(CompileException e) {
         log.warn("编译异常捕获：{}", e.getMessage());
+        if(e.getStderr()==null||e.getStderr().isEmpty()||e.getStderr().equalsIgnoreCase("0")){
+            return new ResponseResult<>(ResultStatus.COMPILE_ERROR.getCode(), e.getMessage(), null);
+        }
         return new ResponseResult<>(ResultStatus.COMPILE_ERROR.getCode(), e.getStderr(), null);
     }
 
     @ExceptionHandler(value = SubmitException.class)
     public ResponseResult<String> submitExceptionHandler(SubmitException e) {
         log.warn("提交异常捕获：{}", e.getMessage());
+        if(e.getStderr()==null||e.getStderr().isEmpty()||e.getStderr().equalsIgnoreCase("0")){
+            new ResponseResult<>(ResultStatus.SUBMIT_ERROR.getCode(), e.getMessage(), null);
+        }
         return new ResponseResult<>(ResultStatus.SUBMIT_ERROR.getCode(), e.getStderr(), null);
     }
 
     @ExceptionHandler(value = CodeRunException.class)
     public ResponseResult<String> runtimeExceptionHandler(CodeRunException e) {
         log.warn("运行异常捕获：{}", e.getMessage());
+        if(e.getStderr()==null||e.getStderr().isEmpty()||e.getStderr().equalsIgnoreCase("0")){
+            new ResponseResult<>(ResultStatus.RUNTIME_ERROR.getCode(), e.getMessage(), null);
+        }
         return new ResponseResult<>(ResultStatus.RUNTIME_ERROR.getCode(), e.getStderr(), null);
     }
 
