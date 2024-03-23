@@ -4,6 +4,7 @@ import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.io.resource.Resource;
 import cn.hutool.core.lang.UUID;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.dong.djudge.entity.InCaseGroupRoot;
 import com.dong.djudge.entity.InTestCaseGroup;
 import com.dong.djudge.entity.OutCaseGroupRoot;
@@ -13,10 +14,16 @@ import com.dong.djudge.entity.SaveCaseGroupRoot;
 import com.dong.djudge.entity.SaveTestCaseGroup;
 import com.dong.djudge.entity.judge.RunResult;
 import com.dong.djudge.entity.judge.RunResultRoot;
+import com.dong.djudge.pojo.SandBoxSetting;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.system.ApplicationHome;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
@@ -30,18 +37,19 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
+@Component
 public class CommonUtils {
 
+    @Autowired
+    private static ResourceLoader resourceLoader;
     /**
      * 获取当前类路径下的文件路径。
      *
@@ -50,33 +58,20 @@ public class CommonUtils {
      */
     public static String getFilePath() throws Exception {
         try {
-            // 获取ClassPathResource，表示当前类路径
-            Resource resource = new ClassPathResource("");
+            // 获取当前工作目录（项目根目录）
+            String currentWorkingDir = System.getProperty("user.dir");
 
-            // 获取文件的URL
-            URL fileUrl = ResourceUtils.getURL(resource.getUrl().getPath());
-
-            // 将URL转换为Path
-            Path path = Paths.get(fileUrl.toURI());
-
-            // 移到父目录（移除路径的最后一个元素）
-            path = path.getParent();
-
-            // 再次移动到父目录以移除 "target"
-            path = path.getParent();
-
-            // 用空字符串替换 "test-classes" 和 "classes"
-            path = path.resolve("file"); // 添加 "file" 到路径
+            // 拼接文件路径
+            Path filePath = Paths.get(currentWorkingDir, "file");
 
             // 将Path转换为String
-            return path.toString();
+            return filePath.toString();
         } catch (Exception e) {
             // 处理异常，例如 URISyntaxException 或 IOException
             log.error("获取文件路径错误:{}", e.getMessage());
             throw new Exception("获取文件路径错误", e);
         }
     }
-
 
     /**
      * 从指定URL获取JSON内容并返回字符串，先进行有效性检查。
@@ -278,12 +273,14 @@ public class CommonUtils {
         String fileContent = null;
         try {
             fileContent = readFileContent(filePath);
-            log.info("文件内容:\n" + fileContent);
             // 在实际应用中，你可能需要将文件内容传递给前端或进行其他操作
         } catch (IOException e) {
-            log.warn("读取文件时发生错误: " + e.getMessage());
+            log.warn("读取文件不存在:{}",e.getMessage());
             // 在实际应用中，你可能需要返回一个错误页面或其他错误处理逻辑
+        }catch (Exception e){
+            log.warn("读取文件时发生错误: " + e.getMessage());
         }
+
 
         return fileContent; // 返回一个成功页面或其他结果
     }
@@ -383,11 +380,11 @@ public class CommonUtils {
                 }
             }
 
-            return false; // 有效的JSON
+            return true; // 有效的JSON
         } catch (Exception e) {
             log.warn("JSON解析失败:{}", e.getMessage());
             // 解析失败，表示输入不是有效的JSON
-            return true; // 无效的JSON
+            return false; // 无效的JSON
         }
     }
 
@@ -587,6 +584,13 @@ public class CommonUtils {
         }
         // 返回结果列表
         return list;
+    }
+
+    public static String getInstalledPackages(RestTemplate restTemplate, SandBoxSetting sandBoxSetting) {
+        String s = sandBoxSetting.getBaseUrl() + "/getInstallList";
+        ResponseEntity<String> forEntity = restTemplate.getForEntity(s, String.class);
+        String body = forEntity.getBody();
+        return Objects.requireNonNull(JSONObject.parseObject(body)).getString("installed_packages");
     }
 
 }

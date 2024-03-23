@@ -14,13 +14,14 @@ public class RunResult {
 
     public RunResult() {
     }
+
     public RunResult(RunResultForTestGroup runResultForTestGroup) {
-        this.exitStatus=runResultForTestGroup.getExitStatus();
-        this.files=runResultForTestGroup.getFiles();
-        this.memory=runResultForTestGroup.getMemory();
-        this.originalStatus=runResultForTestGroup.getOriginalStatus();
-        this.runTime=runResultForTestGroup.getRunTime();
-        this.status=runResultForTestGroup.getStatus();
-        this.time=runResultForTestGroup.getTime();
+        this.exitStatus = runResultForTestGroup.getExitStatus();
+        this.files = runResultForTestGroup.getFiles();
+        this.memory = runResultForTestGroup.getMemory();
+        this.originalStatus = runResultForTestGroup.getOriginalStatus();
+        this.runTime = runResultForTestGroup.getRunTime();
+        this.status = runResultForTestGroup.getStatus();
+        this.time = runResultForTestGroup.getTime();
     }
 }

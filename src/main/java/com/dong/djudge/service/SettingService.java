@@ -25,4 +25,9 @@ public interface SettingService {
     ResponseResult<Object> editServerName(String sid, String name);
 
     ResponseResult<Object> systemConfigInfo(String sid);
+
+
+    ResponseResult<Object> getLanguageDictionary();
+
+    ResponseResult<Object> getLanguageInstallConfig();
 }

@@ -2,8 +2,6 @@ package com.dong.djudge.enums;
 
 import lombok.Getter;
 
-import javax.annotation.processing.Generated;
-
 /**
  * @author 樊东升
  * @date 2023/12/7 17:09

@@ -73,7 +73,7 @@ public class ScheduledConfig {
                 LambdaQueryWrapper<SandBoxSetting> lambda = new QueryWrapper<SandBoxSetting>().lambda();
                 lambda.eq(SandBoxSetting::getId, sandBoxSetting.getId());
                 sandBoxSettingMapper.update(sandBoxSetting, lambda);
-                log.info("沙盒服务器地址：{}，分数：{}，级别：{}，状态：{}，频率：{}", sandBoxSetting.getBaseUrl(), grades, sandBoxSetting.getLevel(), sandBoxSetting.getState(), sandBoxSetting.getFrequency());
+                //log.info("沙盒服务器地址：{}，分数：{}，级别：{}，状态：{}，频率：{}", sandBoxSetting.getBaseUrl(), grades, sandBoxSetting.getLevel(), sandBoxSetting.getState(), sandBoxSetting.getFrequency());
             });
         }
     }

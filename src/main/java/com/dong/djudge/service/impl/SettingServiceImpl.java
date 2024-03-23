@@ -2,17 +2,12 @@ package com.dong.djudge.service.impl;
 
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateTime;
-import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dong.djudge.dto.SandBoxSettingDTO;
 import com.dong.djudge.entity.setting.SystemConfig;
-import com.dong.djudge.mapper.SandBoxSettingMapper;
-import com.dong.djudge.mapper.SettingMapper;
-import com.dong.djudge.mapper.SystemMessageMapper;
-import com.dong.djudge.pojo.SandBoxSetting;
-import com.dong.djudge.pojo.Setting;
-import com.dong.djudge.pojo.SystemMetricsPojo;
+import com.dong.djudge.mapper.*;
+import com.dong.djudge.pojo.*;
 import com.dong.djudge.service.SettingService;
 import com.dong.djudge.util.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.socket.WebSocketHandler;
+import org.springframework.web.socket.client.WebSocketClient;
+import org.springframework.web.socket.client.WebSocketConnectionManager;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -40,6 +39,17 @@ public class SettingServiceImpl implements SettingService {
 
     @Autowired
     private SystemMessageMapper systemMessageMapper;
+
+    @Autowired
+    private LanguageDictionaryMapper languageDictionaryMapper;
+
+    @Autowired
+    private LanguageConfigMapper languageConfigMapper;
+
+    @Autowired
+    private LanguageInstallMapper languageInstallMapper;
+
+
 
     /**
      * 该方法用于为沙盒环境设置服务器URL。
@@ -256,6 +266,34 @@ public class SettingServiceImpl implements SettingService {
         systemConfig.setFrequency(sandBoxSetting.getFrequency());
         systemConfig.setLevel(sandBoxSetting.getLevel());
         systemConfig.setState(sandBoxSetting.getState());
+        LambdaQueryWrapper<LanguageConfig> l2 = new QueryWrapper<LanguageConfig>().lambda();
+        LambdaQueryWrapper<LanguageConfig> eq = l2.eq(LanguageConfig::getServerId, sid);
+        List<LanguageConfig> languageConfigs = languageConfigMapper.selectList(eq);
+        List<LanguageInstall> languageInstalls = languageInstallMapper.selectList(null);
+        Map<Long,String> map=new HashMap<>();
+        for (LanguageInstall languageInstall : languageInstalls) {
+            map.put(languageInstall.getId(),languageInstall.getLanguage());
+        }
+        List<String> list=new ArrayList<>();
+        for (LanguageConfig languageConfig : languageConfigs) {
+            list.add(map.get(Long.parseLong(languageConfig.getLanguageId())));
+        }
+        systemConfig.setLanguageLabelList(list);
         return ResponseResult.ok(systemConfig);
+    }
+
+
+
+
+    @Override
+    public ResponseResult<Object> getLanguageDictionary() {
+        List<LanguageDictionary> languageDictionaries = languageDictionaryMapper.selectList(null);
+        return ResponseResult.ok(languageDictionaries);
+    }
+
+    @Override
+    public ResponseResult<Object> getLanguageInstallConfig() {
+        List<LanguageInstall> languageInstalls = languageInstallMapper.selectList(null);
+        return ResponseResult.ok(languageInstalls);
     }
 }

@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -75,33 +74,69 @@ public class SettingController {
     }
 
     /**
-     * 获取系统信息
-     * @param sid
-     * @return
+     * 获取系统硬件信息
+     *
+     * @param sid 服务器id
+     * @return 系统信息
      */
     @GetMapping("/systemDeviceInfo")
     public ResponseResult<Object> systemInfo(@RequestParam String sid) {
         return settingService.systemInfo(sid);
     }
 
+    /**
+     * 获取系统配置信息
+     * @param sid 服务器id
+     * @return 系统配置信息
+     */
     @GetMapping("/systemConfigInfo")
-public ResponseResult<Object> systemConfigInfo(@RequestParam String sid) {
+    public ResponseResult<Object> systemConfigInfo(@RequestParam String sid) {
         return settingService.systemConfigInfo(sid);
     }
 
 
+    /**
+     * 获取服务器信息
+     *
+     * @return 服务器信息
+     */
     @GetMapping("/serverInfo")
     public ResponseResult<Object> serverInfo() {
         return settingService.serverInfo();
     }
 
+    /**
+     * 获取服务器名称
+     *
+     * @param sid  服务器id
+     * @param name 服务器名称
+     * @return 获取结果
+     */
     @PostMapping("/editServerName")
-    public ResponseResult<Object> editServerName(@RequestParam String sid,@RequestParam String name) {
-        return settingService.editServerName(sid,name);
+    public ResponseResult<Object> editServerName(@RequestParam String sid, @RequestParam String name) {
+        return settingService.editServerName(sid, name);
     }
 
 
+    /**
+     * 获取语言字典
+     *
+     * @return 语言字典
+     */
+    @PostMapping("/getLanguageDictionary")
+    public ResponseResult<Object> getLanguageDictionary() {
+        return settingService.getLanguageDictionary();
+    }
 
+    /**
+     * 获取语言安装配置
+     *
+     * @return 语言安装配置
+     */
+    @GetMapping("/getLanguageInstallConfig")
+    public ResponseResult<Object> getLanguageInstallConfig() {
+        return settingService.getLanguageInstallConfig();
+    }
 
 
 }
