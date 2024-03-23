@@ -244,6 +244,9 @@ public class SandboxRun {
         JSONArray files = new JSONArray();
 
         JSONObject testCaseInput = new JSONObject();
+        if(fileContent==null){
+            fileContent="";
+        }
         testCaseInput.set("content", fileContent);
 
         if (BooleanUtils.isFalse(isFileIO)) {
