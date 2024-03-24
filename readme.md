@@ -34,7 +34,7 @@ services:
 运行以下命令启动判题机镜像：
 
 ```
-docker run -itd -p 6005:6005 --name dj \pllysun/d-judge:latest
+docker run -itd -p 6005:6005 --name dj pllysun/d-judge:latest
 ```
 
 ### 代码沙盒镜像
