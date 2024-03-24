@@ -26,7 +26,7 @@ public class CompileServiceImpl implements CompileService {
 
     @Override
     public String compile(JudgeRequest judgeRequest) throws CompileException {
-        log.info("code:{}", judgeRequest.getCode());
+        log.debug("code:{}", judgeRequest.getCode());
         return compilerTask.compilerTask(judgeRequest);
     }
 }

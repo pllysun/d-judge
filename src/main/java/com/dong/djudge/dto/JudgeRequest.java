@@ -2,6 +2,7 @@ package com.dong.djudge.dto;
 
 import com.dong.djudge.entity.judge.CodeSetting;
 import com.dong.djudge.entity.judge.StandardCode;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,16 +23,18 @@ public class JudgeRequest implements Serializable {
     @Serial
     private static final long serialVersionUID = 666L;
     /**
-     * 评测的类型(0-OI,1-OJ,2-ACM,3-CODE)
+     * 评测的类型(0-OI,1-OJ)
      */
     private String modeType;
     /**
      * 评测的代码
      */
+    @NotNull(message = "code不能为空")
     private String code;
     /**
      * 评测的语言
      */
+    @NotNull(message = "language不能为空")
     private String language;
     /**
      * 测试测试集按照单个测试来计算时间和内存还是总的测试集来计算时间和内存（默认:true）
