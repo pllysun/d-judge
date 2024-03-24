@@ -55,6 +55,7 @@ public class RunResultRoot {
         for (RunResultForTestGroup result : runResults) {
             Map<Integer, RunResult> orDefault = this.runResult.getOrDefault(result.getGid(), new HashMap<>());
             RunResult rR = new RunResult(result);
+            rR.setInput(result.getInput());
             orDefault.put(result.getId(), rR);
             this.runResult.put(result.getGid(), orDefault);
         }

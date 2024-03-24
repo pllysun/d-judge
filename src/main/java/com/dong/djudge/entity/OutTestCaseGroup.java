@@ -15,7 +15,17 @@ public class OutTestCaseGroup {
     /**
      * 测试输入值
      */
-    private String value;
+    private String input;
+
+    /**
+     * 测试输出值
+     */
+    private String taOutput;
+
+    /**
+     * 标准值
+     */
+    private String saOutput;
 
     /**
      * 该测试是否通过

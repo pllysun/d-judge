@@ -481,6 +481,7 @@ public class CommonUtils {
                 SaveTestCaseGroup saveTestCaseGroup = new SaveTestCaseGroup();
                 RunResult runResult = integerRunResultMap.get(j);
                 saveTestCaseGroup.setId(j);
+                saveTestCaseGroup.setInput(runResult.getInput());
                 saveTestCaseGroup.setValue(runResult.getFiles().getStdout());
                 // 将 testCaseGroup 添加到 testCaseGroupRoot 的输入列表中
                 if (saveCaseGroupRoot.getSavePut() == null) {
@@ -502,30 +503,42 @@ public class CommonUtils {
      * @return 更新后的测试用例组列表
      */
     public static List<OutCaseGroupRoot> getCaseResult(RunResultRoot runResultRoot, List<OutCaseGroupRoot> outCaseGroupRootList) {
+        // 创建一个映射，用于存储每个测试组的结果
         Map<Integer, OutCaseResult> groupResultMap = new HashMap<>();
+        // 创建一个映射，用于存储每个测试用例的结果
         Map<Integer, Map<Integer, OutCaseResult>> testCaseResultMap = new HashMap<>();
+        // 获取运行结果
         Map<Integer, Map<Integer, RunResult>> runResult = runResultRoot.getRunResult();
-
+        // 遍历运行结果
         for (Map.Entry<Integer, Map<Integer, RunResult>> groupEntry : runResult.entrySet()) {
+            // 创建一个映射，用于存储每个测试用例的结果
             Map<Integer, OutCaseResult> testCaseMap = new HashMap<>();
+            // 初始化总时间、运行时间和内存使用量
             long totalTime = 0L, totalRunTime = 0L, totalMemory = 0L;
-
+            // 遍历每个测试用例的运行结果
             for (Map.Entry<Integer, RunResult> testCaseEntry : groupEntry.getValue().entrySet()) {
+                // 获取当前测试用例的运行结果
                 RunResult rR = testCaseEntry.getValue();
+                // 累加总时间、运行时间和内存使用量
                 totalTime += rR.getTime();
                 totalRunTime += rR.getRunTime();
                 totalMemory += rR.getMemory();
+                // 将当前测试用例的结果存入映射
                 testCaseMap.put(testCaseEntry.getKey(), new OutCaseResult(totalTime, totalRunTime, totalMemory));
             }
-
+            // 将测试组的结果存入映射，注意这里对时间和内存使用量进行了单位转换
             groupResultMap.put(groupEntry.getKey(), new OutCaseResult(totalTime/1000000, totalRunTime/1000000, totalMemory/1024));
+            // 将测试用例的结果存入映射
             testCaseResultMap.put(groupEntry.getKey(), testCaseMap);
         }
-
+        // 遍历测试用例组列表
         for (OutCaseGroupRoot outCaseGroupRoot : outCaseGroupRootList) {
+            // 设置测试用例组的结果
             outCaseGroupRoot.setGroupResult(groupResultMap.get(outCaseGroupRoot.getGid()));
 
+            // 遍历测试用例组的输出列表
             for (OutTestCaseGroup outTestCaseGroup : outCaseGroupRoot.getOutput()) {
+                // 获取并设置测试用例的结果，注意这里对时间和内存使用量进行了单位转换
                 OutCaseResult ocr = testCaseResultMap.get(outCaseGroupRoot.getGid()).get(outTestCaseGroup.getId());
                 ocr.setMemory(ocr.getMemory()/1024);
                 ocr.setRunTime(ocr.getRunTime()/1000000);
@@ -533,10 +546,9 @@ public class CommonUtils {
                 outTestCaseGroup.setCaseResult(ocr);
             }
         }
-
+        // 返回更新后的测试用例组列表
         return outCaseGroupRootList;
     }
-
 
     /**
      * 比较两个 SaveCaseGroupRoot 列表，并根据每个 SaveTestCaseGroup 的 value 值是否相等来设置其 isAccepted 属性。
@@ -565,7 +577,9 @@ public class CommonUtils {
                 SaveTestCaseGroup s = sa.getSavePut().get(j);
                 // 设置 OutTestCaseGroup 的 id 和 value 属性
                 outTestCaseGroup.setId(t.getId());
-                outTestCaseGroup.setValue(t.getValue());
+                outTestCaseGroup.setInput(t.getInput());
+                outTestCaseGroup.setTaOutput(t.getValue());
+                outTestCaseGroup.setSaOutput(s.getValue());
                 // 比较 SaveTestCaseGroup 的 value 值是否相等
                 if (!t.getValue().equals(s.getValue())) {
                     // 如果 value 值不相等，设置 isAccepted 为 false，并将 OutCaseGroupRoot 的 groupAccepted 设置为 false

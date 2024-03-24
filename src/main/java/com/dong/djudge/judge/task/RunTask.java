@@ -63,7 +63,6 @@ public class RunTask {
             SandBoxRun sandBoxRun = sandBoxRunMapper.selectOne(new QueryWrapper<SandBoxRun>().lambda().eq(SandBoxRun::getFileId, fileId));
             SandboxRun.delFile(sandBoxRun.getBaseUrl(), fileId);
         } else {
-
             if (request.getStandardCode().getInputFileType().equals(InputFileEnum.JSON.getValue())) {
                 if (!CommonUtils.isValidJson(request.getStandardCode().getInputFileContext())) {
                     return null;
@@ -107,6 +106,7 @@ public class RunTask {
                         RunResultForTestGroup runResult = JSON.parseArray(finalObjects.toString(), RunResultForTestGroup.class).getFirst();
                         runResult.setGid(gid);
                         runResult.setId(id);
+                        runResult.setInput(inTestCaseGroup.getValue());
                         if (!JudgeStateEnum.ACCEPTED.getDescription().equals(runResult.getOriginalStatus())) {
                             for (Future<RunResultForTestGroup> remainingFuture : futures) {
                                 remainingFuture.cancel(true);

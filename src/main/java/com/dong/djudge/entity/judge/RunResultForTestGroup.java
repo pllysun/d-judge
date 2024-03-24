@@ -12,6 +12,7 @@ public class RunResultForTestGroup {
     private Integer id;
     private long exitStatus;
     private RunResultFile files;
+    private String input;
     private long memory;
     private String originalStatus;
     private long runTime;

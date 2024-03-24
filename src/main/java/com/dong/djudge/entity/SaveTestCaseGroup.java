@@ -13,6 +13,10 @@ public class SaveTestCaseGroup {
      */
     private int id;
     /**
+     * 测试输入值
+     */
+    private String input;
+    /**
      * 输出答案值
      */
     private String value;
