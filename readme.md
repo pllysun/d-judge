@@ -52,18 +52,18 @@ docker run -itd --rm --privileged --shm-size=256m -p 5050:5050 --name=j0 pllysun
 具体页面如下图:
 
 监控页
-![1.png](images%2F1.png)
+<img src="images/1.png">
 添加服务页
 
 可以在这里添加判题沙盒服务，通过判题沙盒服务的IP地址和端口添加即可
-![2.png](images%2F2.png)
+<img src="images/2.png">
 
 删除服务
-![3.png](images%2F3.png)
+<img src="images/3.png">
 
 安装运行环境
 目前只支持特定环境的安装，如果需要自定义安装代码运行环境，可以自己进入容器内部安装。
-![4.png](images%2F4.png)
+<img src="images/4.png">
 # 运行&测试
 
 [判题机 API在线文档](https://apifox.com/apidoc/shared-d820fb9a-54b2-4410-8097-49e725a5cf95/doc-3625437)
