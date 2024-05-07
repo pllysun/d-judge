@@ -12,6 +12,7 @@ import com.dong.djudge.entity.StandardCodeEntity;
 import com.dong.djudge.entity.TestGroupEntity;
 import com.dong.djudge.entity.judge.RunResultRoot;
 import com.dong.djudge.enums.JudgeStateEnum;
+import com.dong.djudge.enums.ResultStatus;
 import com.dong.djudge.judge.task.RunTask;
 import com.dong.djudge.mapper.StandardCodeMapper;
 import com.dong.djudge.mapper.TestGroupMapper;
@@ -53,9 +54,18 @@ public class JudgeServiceOjImpl extends ServiceImpl<TestGroupMapper, TestGroupEn
         if (runResultRoot == null) {
             return ResponseResult.failResponse("执行出错");
         }
+        if("1".equals(runResultRoot.getState())){
+            return ResponseResult.failResponse("非法测试集Json格式，请检查测试集的格式");
+        }
+        if("2".equals(runResultRoot.getState())){
+            return ResponseResult.failResponse("无法从URL中获取有效测试集，请检查URL对应的文件内容");
+        }
+        if("3".equals(runResultRoot.getState())){
+            return ResponseResult.failResponse("无法找到对应的测试集文件（AD-），请重新上传");
+        }
         // 如果运行结果的状态不为空且不等于"接受"，则返回失败响应
         if (runResultRoot.getState() != null && !JudgeStateEnum.ACCEPTED.getDescription().equals(runResultRoot.getState())) {
-            return ResponseResult.failResponse(runResultRoot.getState(), runResultRoot.getInput());
+            return new ResponseResult<>(ResultStatus.RUNTIME_ERROR.getCode(),runResultRoot.getState(), runResultRoot.getInput());
         }
         // 创建查询条件，查询标准代码实体
         LambdaQueryWrapper<StandardCodeEntity> lambda = new QueryWrapper<StandardCodeEntity>().lambda();
@@ -64,7 +74,7 @@ public class JudgeServiceOjImpl extends ServiceImpl<TestGroupMapper, TestGroupEn
         StandardCodeEntity standardCodeEntity = standardCodeMapper.selectOne(lambda);
         // 如果标准代码实体为空，则返回没有测试集答案的失败响应
         if (standardCodeEntity == null) {
-            return ResponseResult.failResponse("没有测试集答案");
+            return ResponseResult.failResponse("无法找到对应的测试集答案文件（SC-），请重新上传");
         }
         // 获取运行结果列表
         List<SaveCaseGroupRoot> ta = CommonUtils.getRunResultList(runResultRoot);

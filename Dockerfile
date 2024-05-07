@@ -14,6 +14,7 @@ VOLUME /app/file
 
 # 暴露应用程序使用的端口
 EXPOSE 6005
+EXPOSE 5005
 
 # 启动应用程序
-CMD ["java", "-jar", "d-judge-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005","d-judge-0.0.1-SNAPSHOT.jar"]

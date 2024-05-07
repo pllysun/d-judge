@@ -60,4 +60,8 @@ public class RunResultRoot {
             this.runResult.put(result.getGid(), orDefault);
         }
     }
+
+    public RunResultRoot(String state) {
+        this.state = state;
+    }
 }
