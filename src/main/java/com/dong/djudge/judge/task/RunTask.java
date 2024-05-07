@@ -65,13 +65,13 @@ public class RunTask {
         } else {
             if (request.getStandardCode().getInputFileType().equals(InputFileEnum.JSON.getValue())) {
                 if (!CommonUtils.isValidJson(request.getStandardCode().getInputFileContext())) {
-                    return null;
+                    return new RunResultRoot("1");
                 }
                 runResultRoot = getRunResultList(request, fileId, languageConfigByName);
             } else if (request.getStandardCode().getInputFileType().equals(InputFileEnum.URL.getValue())) {
                 String jsonForURL = CommonUtils.getJsonForURL(request.getStandardCode().getInputFileContext());
                 if (jsonForURL == null) {
-                    return null;
+                    return new RunResultRoot("2");
                 }
                 request.getStandardCode().setInputFileContext(jsonForURL);
                 runResultRoot = getRunResultList(request, fileId, languageConfigByName);
@@ -80,7 +80,7 @@ public class RunTask {
                 testGroupEntityLambdaQueryWrapper.eq(TestGroupEntity::getTestGroupId, request.getStandardCode().getInputFileContext());
                 TestGroupEntity testGroupEntity = testGroupMapper.selectOne(testGroupEntityLambdaQueryWrapper);
                 if (testGroupEntity == null) {
-                    return null;
+                    return new RunResultRoot("3");
                 }
                 String jsonForFile = CommonUtils.getJsonForFile(testGroupEntity.getTestGroupId());
                 request.getStandardCode().setInputFileContext(jsonForFile);
