@@ -92,21 +92,30 @@ public class RunTask {
     }
 
     private RunResultRoot getRunResultList(JudgeRequest request, String fileId, LanguageConfig languageConfigByName) {
-        //通过虚拟线程同时运行所有测试用例
+        // 创建一个运行结果根对象
         RunResultRoot runResultRoot = new RunResultRoot();
+        // 创建一个新的虚拟线程执行器，用于并行运行所有测试用例
         try (ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor()) {
+            // 创建一个Future列表，用于存储每个测试用例的运行结果
             List<Future<RunResultForTestGroup>> futures = new ArrayList<>();
+            // 遍历输入的测试组
             for (InCaseGroupRoot inCaseGroupRoot : CommonUtils.getInTestGroupForJson(request.getStandardCode().getInputFileContext())) {
                 Integer gid = inCaseGroupRoot.getGid();
+                // 遍历每个测试组中的测试用例
                 for (InTestCaseGroup inTestCaseGroup : inCaseGroupRoot.getInput()) {
                     Integer id = inTestCaseGroup.getId();
+                    // 创建一个任务，该任务将运行测试用例并返回运行结果
                     Callable<RunResultForTestGroup> task = () -> {
-                        // 执行任务，这里简单返回一个字符串
+                        // 运行测试用例
                         JSONArray finalObjects = runService.testCase(languageConfigByName, request, fileId, inTestCaseGroup.getValue());
+                        // 解析运行结果
                         RunResultForTestGroup runResult = JSON.parseArray(finalObjects.toString(), RunResultForTestGroup.class).getFirst();
+                        // 设置运行结果的gid和id
                         runResult.setGid(gid);
                         runResult.setId(id);
+                        // 设置运行结果的输入
                         runResult.setInput(inTestCaseGroup.getValue());
+                        // 如果运行结果的状态不是"接受"，则取消所有剩余的Future，并设置运行结果根的错误信息、状态和输入
                         if (!JudgeStateEnum.ACCEPTED.getDescription().equals(runResult.getOriginalStatus())) {
                             for (Future<RunResultForTestGroup> remainingFuture : futures) {
                                 remainingFuture.cancel(true);
@@ -115,29 +124,37 @@ public class RunTask {
                             runResultRoot.setState(runResult.getOriginalStatus());
                             runResultRoot.setInput(inTestCaseGroup.getValue());
                         }
+                        // 返回运行结果
                         return runResult;
                     };
+                    // 提交任务并将Future添加到列表中
                     Future<RunResultForTestGroup> future = executorService.submit(task);
                     futures.add(future);
                 }
             }
+            // 创建一个列表，用于存储所有运行结果
             List<RunResultForTestGroup> list = new ArrayList<>();
+            // 从每个Future中获取运行结果并添加到列表中
             for (Future<RunResultForTestGroup> future : futures) {
                 list.add(future.get());
             }
+            // 设置运行结果根的运行结果
             runResultRoot.setRunResult(list);
+            // 关闭执行器
             executorService.shutdown();
-            //运行完毕删除沙盒里面的文件
+            // 运行完毕后删除沙盒中的文件
             SandBoxRun sandBoxRun = sandBoxRunMapper.selectOne(new QueryWrapper<SandBoxRun>().lambda().eq(SandBoxRun::getFileId, fileId));
             SandboxRun.delFile(sandBoxRun.getBaseUrl(), fileId);
         } catch (CancellationException e) {
+            // 如果任务被取消，删除沙盒中的文件并记录警告
             SandBoxRun sandBoxRun = sandBoxRunMapper.selectOne(new QueryWrapper<SandBoxRun>().lambda().eq(SandBoxRun::getFileId, fileId));
             SandboxRun.delFile(sandBoxRun.getBaseUrl(), fileId);
             log.warn("任务取消:{}", e.getMessage());
         } catch (ExecutionException | InterruptedException e) {
+            // 如果执行异常，抛出运行时异常
             throw new RuntimeException(e);
         }
+        // 返回运行结果根
         return runResultRoot;
-
     }
 }
