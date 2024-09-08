@@ -161,6 +161,7 @@ public class SandboxRun {
         cmd.set("env", envs);
         cmd.set("files", COMPILE_FILES);
         // ms-->ns
+        maxCpuTime= maxCpuTime ==null?TIME_LIMIT_MS:maxCpuTime;
         cmd.set("cpuLimit", maxCpuTime * 1000 * 1000L);
         cmd.set("clockLimit", maxRealTime * 1000 * 1000L);
         // byte
