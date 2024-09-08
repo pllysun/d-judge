@@ -115,14 +115,14 @@ language: Java
 src_path: Main.java
 exe_path: Main.jar
 compile:
-  env: default
+  env: java
   command: /bin/bash -c "javac -encoding utf-8 {src_path} && jar -cvf {exe_path} *.class"
   maxCpuTime: 10s
   maxRealTime: 20s
   maxMemory: 512mb
 run:
-  env: default
-  command: /usr/bin/java -Dfile.encoding=UTF-8 -cp /w/{exe_path} Main
+  env: java
+  command: /bin/bash -c "/usr/bin/java -Dfile.encoding=UTF-8 -cp /w/Main.jar Main"
 
 ---
 language: Python2

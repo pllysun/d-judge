@@ -30,6 +30,12 @@ public class LanguageConfigLoader {
             "LANGUAGE=en_US:en",
             "HOME=/w");
 
+    private static final List<String> JAVA_ENV = Arrays.asList(
+            "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+            "LANG=en_US.UTF-8",
+            "LANGUAGE=en_US:en",
+            "HOME=/w");
+
     private static final List<String> PYTHON3_ENV = Arrays.asList("LANG=en_US.UTF-8",
             "LANGUAGE=en_US:en", "LC_ALL=en_US.UTF-8", "PYTHONIOENCODING=utf-8");
 
@@ -96,6 +102,9 @@ public class LanguageConfigLoader {
                 case "golang_compile":
                     languageConfig.setCompileEnvs(GOLANG_COMPILE_ENV);
                     break;
+                case "java":
+                    languageConfig.setCompileEnvs(JAVA_ENV);
+                    break;
                 default:
                     languageConfig.setCompileEnvs(DEFAULT_ENV);
             }
@@ -117,6 +126,9 @@ public class LanguageConfigLoader {
                     break;
                 case "golang_run":
                     languageConfig.setRunEnvs(GOLANG_RUN_ENV);
+                    break;
+                case "java":
+                    languageConfig.setRunEnvs(JAVA_ENV);
                     break;
                 default:
                     languageConfig.setRunEnvs(DEFAULT_ENV);

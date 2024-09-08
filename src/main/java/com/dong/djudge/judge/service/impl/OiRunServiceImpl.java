@@ -16,7 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import static com.dong.djudge.judge.service.impl.CompilerServiceImpl.parseCompileCommand;
 
 /**
  * @author 阿东
@@ -56,7 +59,7 @@ public class OiRunServiceImpl implements RunService {
         LambdaQueryWrapper<SandBoxRun> lambda = new QueryWrapper<SandBoxRun>().lambda();
         lambda.eq(SandBoxRun::getFileId, fileId);
         SandBoxRun sandBoxRun = sandBoxRunMapper.selectOne(lambda);
-        args.add(languageConfig.getRunCommand());
+        args = parseCompileCommand(languageConfig.getRunCommand());
         JSONArray objects = SandboxRun.testCase(sandBoxRun.getBaseUrl(), args,
                 languageConfig.getRunEnvs(),
                 request.getCodeSetting().getMaxTime() == null ? maxTime : request.getCodeSetting().getMaxTime(),

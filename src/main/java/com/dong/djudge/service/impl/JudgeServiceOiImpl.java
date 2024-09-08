@@ -32,7 +32,7 @@ public class JudgeServiceOiImpl extends ServiceImpl<TestGroupMapper, TestGroupEn
 
     /**
      * OI判题，OI模式是指: online input模式，也就是在线输入模式
-     * 这种模式下，用户提交的代码会可被编译成执行文件，然后通过标准输入流输入数据，通过标准输出流输出数据。
+     * 这种模式下，用户提交的代码会被编译成执行文件，然后通过标准输入流输入数据，通过标准输出流输出数据。
      * 简单的输入输出模式
      *
      * @param request 请求参数
