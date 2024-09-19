@@ -52,85 +52,108 @@ public class TestGroupFileController {
     }
 
     private ResponseResult<String> uploadFile(TestGroupFileDTO testGroupFileDTO, BindingResult bindingResult, boolean isUpload) throws Exception {
-        log.info("type:{}, content:{}", testGroupFileDTO.getType(), testGroupFileDTO.getContent());
+        log.info("开始上传文件，type: {}, content: {}", testGroupFileDTO.getType(), testGroupFileDTO.getContent());
+
+        // 检查绑定结果
         if (bindingResult.hasErrors()) {
-            List<FieldError> fieldErrors = bindingResult.getFieldErrors();
-            return ResponseResult.failResponse(fieldErrors.get(0).getDefaultMessage());
+            String errorMessage = bindingResult.getFieldErrors().get(0).getDefaultMessage();
+            log.warn("字段校验错误: {}", errorMessage);
+            return ResponseResult.failResponse(errorMessage);
         }
+
         // 获取类型码
         Integer code;
         try {
             code = Objects.requireNonNull(UpLoadFileEnum.getTypeByValue(testGroupFileDTO.getType())).getCode();
+            log.info("文件类型代码: {}", code);
         } catch (NullPointerException e) {
+            log.error("文件类型无效，type: {}", testGroupFileDTO.getType(), e);
             return ResponseResult.failResponse("type参数仅支持:JSON,URL,FILE");
         }
-        if (code == 0 || code == 1) {
-            if (testGroupFileDTO.getContent() == null || testGroupFileDTO.getContent().isBlank()) {
-                return ResponseResult.failResponse("content参数为空，请检查！");
-            }
+
+        // 校验 content 参数
+        if ((code == 0 || code == 1) && (testGroupFileDTO.getContent() == null || testGroupFileDTO.getContent().isBlank())) {
+            log.warn("content参数为空");
+            return ResponseResult.failResponse("content参数为空，请检查！");
         }
+
         String fileId;
-        switch (code) {
-            case 0:
-                // 检查 JSON 是否有效
-                if (!CommonUtils.isValidJson(testGroupFileDTO.getContent())) {
-                    return ResponseResult.failResponse("无效的 JSON 内容！");
-                }
-                if (isUpload) {
-                    fileId = testGroupFileService.uploadFile(testGroupFileDTO.getContent());
-                } else {
-                    testGroupFileService.updateFile(testGroupFileDTO.getFileId(), testGroupFileDTO.getContent());
-                    return ResponseResult.successResponse("更新成功");
-                }
-                break;
-            case 1:
-                String jsonContent;
-                jsonContent = CommonUtils.getJsonForURL(testGroupFileDTO.getContent());
-                if (jsonContent == null) {
-                    return ResponseResult.failResponse("无效的URL或URL内容无法解析！");
-                }
-                // 处理JSON内容或调用fileService.uploadFile方法
-                if (isUpload) {
-                    fileId = testGroupFileService.uploadFile(jsonContent);
-                } else {
-                    testGroupFileService.updateFile(testGroupFileDTO.getFileId(), jsonContent);
-                    return ResponseResult.successResponse("更新成功");
-                }
-                break;
-            case 2:
-                // 处理类型为2的情况
-                try {
-                    if (testGroupFileDTO.getFile() == null) {
-                        return ResponseResult.failResponse("当参数type=file时，file参数不能为空");
-                    }
-                    log.info("file:{}", testGroupFileDTO.getFile().getOriginalFilename());
-                    // 使用 Apache Tika 检测文件类型
-                    String fileType = new Tika().detect(testGroupFileDTO.getFile().getOriginalFilename());
-                    // 检查文件类型是否为 JSON
-                    if (!"application/json".equals(fileType)) {
-                        return ResponseResult.failResponse("文件类型不是 JSON，请检查您的文件格式！");
-                    }
-                    String json = new String(testGroupFileDTO.getFile().getBytes());
-                    if (!CommonUtils.isValidJson(json)) {
+        try {
+            switch (code) {
+                case 0:
+                    // JSON类型处理
+                    if (!CommonUtils.isValidJson(testGroupFileDTO.getContent())) {
+                        log.warn("无效的 JSON 内容: {}", testGroupFileDTO.getContent());
                         return ResponseResult.failResponse("无效的 JSON 内容！");
                     }
-                    if (isUpload) {
-                        fileId = testGroupFileService.uploadFile(json);
-                    } else {
-                        testGroupFileService.updateFile(testGroupFileDTO.getFileId(), json);
-                        return ResponseResult.successResponse("更新成功");
+                    fileId = handleFileUploadOrUpdate(isUpload, testGroupFileDTO, testGroupFileDTO.getContent());
+                    break;
+
+                case 1:
+                    // URL类型处理
+                    String jsonContent = CommonUtils.getJsonForURL(testGroupFileDTO.getContent());
+                    if (jsonContent == null) {
+                        log.warn("无效的URL或URL内容无法解析: {}", testGroupFileDTO.getContent());
+                        return ResponseResult.failResponse("无效的URL或URL内容无法解析！");
                     }
-                } catch (IOException e) {
-                    log.error("文件类型检测失败！", e);
-                    return ResponseResult.failResponse("文件类型检测失败！");
-                }
-                break;
-            default:
-                return ResponseResult.failResponse("调用参数错误！请检查您的调用参数！");
+                    fileId = handleFileUploadOrUpdate(isUpload, testGroupFileDTO, jsonContent);
+                    break;
+
+                case 2:
+                    // 文件类型处理
+                    fileId = handleFileUploadForFileType(testGroupFileDTO, isUpload);
+                    break;
+
+                default:
+                    log.error("调用参数错误，type: {}", testGroupFileDTO.getType());
+                    return ResponseResult.failResponse("调用参数错误！请检查您的调用参数！");
+            }
+        } catch (Exception e) {
+            log.error("文件上传或更新失败！", e);
+            return ResponseResult.failResponse("文件上传或更新失败！");
         }
-        // 返回成功的结果
+
+        log.info("文件上传成功，fileId: {}", fileId);
         return new ResponseResult<>(200, "上传成功", fileId);
     }
+
+    private String handleFileUploadOrUpdate(boolean isUpload, TestGroupFileDTO testGroupFileDTO, String content) throws Exception {
+        if (isUpload) {
+            log.info("执行文件上传操作...");
+            return testGroupFileService.uploadFile(content);
+        } else {
+            log.info("执行文件更新操作，fileId: {}", testGroupFileDTO.getFileId());
+            testGroupFileService.updateFile(testGroupFileDTO.getFileId(), content);
+            return null;
+        }
+    }
+
+    private String handleFileUploadForFileType(TestGroupFileDTO testGroupFileDTO, boolean isUpload) throws Exception {
+        if (testGroupFileDTO.getFile() == null) {
+            log.warn("当参数type=file时，file参数不能为空");
+            throw new IllegalArgumentException("当参数type=file时，file参数不能为空");
+        }
+
+        String originalFilename = testGroupFileDTO.getFile().getOriginalFilename();
+        log.info("处理文件上传, 文件名: {}", originalFilename);
+
+        String fileType = new Tika().detect(originalFilename);
+        log.info("检测到的文件类型: {}", fileType);
+
+        if (!"application/json".equals(fileType)) {
+            log.warn("文件类型不是 JSON，文件名: {}", originalFilename);
+            throw new IllegalArgumentException("文件类型不是 JSON，请检查您的文件格式！");
+        }
+
+        String json = new String(testGroupFileDTO.getFile().getBytes());
+        if (!CommonUtils.isValidJson(json)) {
+            log.warn("无效的 JSON 文件内容: {}", originalFilename);
+            throw new IllegalArgumentException("无效的 JSON 内容！");
+        }
+
+        return handleFileUploadOrUpdate(isUpload, testGroupFileDTO, json);
+    }
+
 
 
     /**
