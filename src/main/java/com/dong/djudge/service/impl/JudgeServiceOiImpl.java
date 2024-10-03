@@ -11,6 +11,7 @@ import com.dong.djudge.service.CompileService;
 import com.dong.djudge.service.HttpService;
 import com.dong.djudge.service.JudgeService;
 import com.dong.djudge.util.ResponseResult;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
  */
 @SuppressWarnings("ALL")
 @Service("JudgeServiceOiImpl")
+@Slf4j
 public class JudgeServiceOiImpl extends ServiceImpl<TestGroupMapper, TestGroupEntity> implements JudgeService {
 
     @Autowired
@@ -47,6 +49,7 @@ public class JudgeServiceOiImpl extends ServiceImpl<TestGroupMapper, TestGroupEn
         if (runResultRoot == null) {
             return ResponseResult.failResponse("执行出错");
         }
+        log.info("runResultRoot: {}", runResultRoot);
         return ResponseResult.ok(runResultRoot.getRunResult().get(0));
     }
 

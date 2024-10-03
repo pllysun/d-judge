@@ -580,12 +580,18 @@ public class CommonUtils {
                 outTestCaseGroup.setInput(t.getInput());
                 outTestCaseGroup.setTaOutput(t.getValue());
                 outTestCaseGroup.setSaOutput(s.getValue());
+
+                // 移除末尾的换行符并进行比较
+                String taValue = removeTrailingNewline(t.getValue());
+                String saValue = removeTrailingNewline(s.getValue());
+
                 // 比较 SaveTestCaseGroup 的 value 值是否相等
-                if (!t.getValue().equals(s.getValue())) {
+                if (!taValue.equals(saValue)) {
                     // 如果 value 值不相等，设置 isAccepted 为 false，并将 OutCaseGroupRoot 的 groupAccepted 设置为 false
                     outTestCaseGroup.setAccepted(false);
                     outCaseGroupRoot.setGroupAccepted(false);
                 }
+
                 // 将 OutTestCaseGroup 对象添加到 OutCaseGroupRoot 的输出列表中
                 if (outCaseGroupRoot.getOutput() == null) {
                     outCaseGroupRoot.setOutput(new ArrayList<>());
@@ -600,11 +606,36 @@ public class CommonUtils {
         return list;
     }
 
+    /**
+     * 去除字符串末尾的换行符，如果存在。
+     *
+     * @param value 输入的字符串
+     * @return 去除末尾换行符后的字符串
+     */
+    private static String removeTrailingNewline(String value) {
+        if (value != null && value.endsWith("\n")) {
+            return value.substring(0, value.length() - 1);
+        }
+        return value;
+    }
+
+
     public static String getInstalledPackages(RestTemplate restTemplate, SandBoxSetting sandBoxSetting) {
         String s = sandBoxSetting.getBaseUrl() + "/getInstallList";
         ResponseEntity<String> forEntity = restTemplate.getForEntity(s, String.class);
         String body = forEntity.getBody();
         return Objects.requireNonNull(JSONObject.parseObject(body)).getString("installed_packages");
+    }
+
+    public static String getLanguage(String language) {
+        return switch (language.toLowerCase()) {
+            case "c" -> "C";
+            case "cpp", "c++" -> "C++";
+            case "java" -> "Java";
+            case "python" -> "Python";
+            case "python3" -> "python3";
+            default -> language;
+        };
     }
 
 }

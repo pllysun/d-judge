@@ -52,7 +52,7 @@ public class JudgeServiceOjImpl extends ServiceImpl<TestGroupMapper, TestGroupEn
         RunResultRoot runResultRoot = runTask.runTask(request, fileId);
         // 如果运行结果为空，则返回执行出错的响应
         if (runResultRoot == null) {
-            return ResponseResult.failResponse("执行出错");
+            return ResponseResult.failResponse("执行出错,测试集不存在,请重新上传测试集");
         }
         if("1".equals(runResultRoot.getState())){
             return ResponseResult.failResponse("非法测试集Json格式，请检查测试集的格式");

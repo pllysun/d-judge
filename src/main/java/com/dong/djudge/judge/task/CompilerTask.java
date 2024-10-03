@@ -8,6 +8,7 @@ import com.dong.djudge.exception.SystemException;
 import com.dong.djudge.judge.LanguageConfigLoader;
 import com.dong.djudge.judge.entity.LanguageConfig;
 import com.dong.djudge.judge.service.CompilerService;
+import com.dong.djudge.util.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -36,8 +37,9 @@ public class CompilerTask {
      */
     public String compilerTask(JudgeRequest request) throws CompileException {
         String testCasesDir; // 测试用例目录
+        String language = CommonUtils.getLanguage(request.getLanguage());
         // 对用户源代码进行编译 获取tmpfs中的fileId
-        LanguageConfig languageConfig = languageConfigLoader.getLanguageConfigByName(request.getLanguage());
+        LanguageConfig languageConfig = languageConfigLoader.getLanguageConfigByName(language);
         // 如果语言配置为空，即不支持的语言，抛出编译异常
         if (languageConfig == null) {
             log.error("Unsupported language {}", request.getLanguage());
@@ -68,4 +70,8 @@ public class CompilerTask {
         // 返回测试用例目录
         return testCasesDir;
     }
+
+
+
+
 }

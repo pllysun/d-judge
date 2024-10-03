@@ -53,7 +53,8 @@ public class RunTask {
     public RunResultRoot runTask(JudgeRequest request, String fileId) throws Exception {
         LanguageConfigLoader languageConfigLoader = new LanguageConfigLoader();
         //获取语言配置
-        LanguageConfig languageConfigByName = languageConfigLoader.getLanguageConfigByName(request.getLanguage());
+        String language = CommonUtils.getLanguage(request.getLanguage());
+        LanguageConfig languageConfigByName = languageConfigLoader.getLanguageConfigByName(language);
         JSONArray objects;
         RunResultRoot runResultRoot;
         if (request.getModeType().equalsIgnoreCase(ModeEnum.OI.getName())) {
@@ -120,6 +121,7 @@ public class RunTask {
                             for (Future<RunResultForTestGroup> remainingFuture : futures) {
                                 remainingFuture.cancel(true);
                             }
+
                             runResultRoot.setErrorInfo(runResult.getFiles().getStderr());
                             runResultRoot.setState(runResult.getOriginalStatus());
                             runResultRoot.setInput(inTestCaseGroup.getValue());
